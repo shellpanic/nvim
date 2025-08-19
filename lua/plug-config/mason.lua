@@ -1,0 +1,45 @@
+require("mason").setup({
+   ui = {
+      icons = {
+         package_installed = "✓",
+         package_pending = "➜",
+         package_uninstalled = "✗",
+      },
+   },
+   ensure_installed = { "debugpy" },
+})
+
+require("mason-tool-installer").setup({
+   ensure_installed = {
+      -- LSP
+      "vue-language-server", --vue
+      -- Linter
+      "flake8", -- python
+      "pyproject-flake8", -- python
+      "eslint_d", -- js
+      "markdownlint", --markdown
+      "selene", --lua
+      -- Formatter
+      "prettier", -- a lot
+      "stylua", -- lua
+      "beautysh", -- zsh
+      "shfmt", -- shell
+      "isort", -- python
+      "black", -- python
+      "yamlfmt", -- yaml
+      "taplo", -- toml
+   },
+})
+
+require("mason-lspconfig").setup({
+   -- A list of servers to automatically install if they're not already installed
+   ensure_installed = {
+      "bashls", --bash
+      "lua_ls", -- lua
+      "rust_analyzer", -- rust
+      "taplo",
+      "ts_ls", -- typescript
+      "basedpyright", --python
+      "marksman", -- markdown
+   },
+})
