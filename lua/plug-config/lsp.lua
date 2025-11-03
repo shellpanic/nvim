@@ -1,24 +1,20 @@
-local lspconfig = require("lspconfig")
 local lsp_signature = require("lsp_signature")
 
 -- Better signature visualisation - Config
 local lsp_signature_cfg = {
-   floating_windows = true, -- virtual only
-   hint_enable = true, -- virtual hint enable
-   hint_prefix = "󰷻 ", -- Panda for parameter, NOTE: for the terminal not support emoji, might crash
+   floating_windows = true,
+   hint_enable = true,
+   hint_prefix = "󰷻 ",
 }
 
--- Use an on_attach function to only map the following keys
--- after the language server attaches to the current buffer
+-- on_attach
 local on_attach = function(_, bufnr)
-   -- Enable completion triggered by <c-x><c-o>
    vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
    lsp_signature.on_attach(lsp_signature_cfg, bufnr)
 
-   -- See `:help vim.lsp.*` for documentation on any of the below functions
    local bufopts = { noremap = true, silent = true, buffer = bufnr }
-
    local lsp_prefix = "<Leader>l"
+
    vim.keymap.set("n", lsp_prefix .. "D", vim.lsp.buf.declaration, { desc = "Go to declaration", unpack(bufopts) })
    vim.keymap.set("n", lsp_prefix .. "d", vim.lsp.buf.definition, { desc = "Go to definition", unpack(bufopts) })
    vim.keymap.set("n", lsp_prefix .. "r", vim.lsp.buf.references, { desc = "Find references", unpack(bufopts) })
@@ -57,7 +53,6 @@ local on_attach = function(_, bufnr)
       vim.lsp.buf.format({ async = true })
    end, { desc = "Format code", unpack(bufopts) })
 
-   -- Diagnostics
    vim.keymap.set(
       "n",
       lsp_prefix .. "e",
@@ -70,57 +65,42 @@ local on_attach = function(_, bufnr)
       vim.diagnostic.setloclist,
       { desc = "Set location list with diagnostics", unpack(bufopts) }
    )
-   -- Leads to issues with warning: No more valid diagnostics to move to
-   -- vim.keymap.set('n', '[d', vim.diagnostic.goto_prev(), bufopts)
-   -- vim.keymap.set('n', ']d', vim.diagnostic.goto_next(), bufopts)
 end
 
--- Fix warning "Undefined global variable "vim"
+-- lua_ls settings
 local lua_ls_setup = {
    Lua = {
-      runtime = {
-         version = "LuaJIT",
-         -- Setup Neovim runtime path
-         path = vim.split(package.path, ";"),
-      },
-      diagnostics = {
-         globals = { "vim" },
-      },
-      workspace = {
-         library = vim.api.nvim_get_runtime_file("", true),
-         checkThirdParty = false,
-      },
-      telemetry = {
-         enable = false,
-      },
+      runtime = { version = "LuaJIT", path = vim.split(package.path, ";") },
+      diagnostics = { globals = { "vim" } },
+      workspace = { library = vim.api.nvim_get_runtime_file("", true), checkThirdParty = false },
+      telemetry = { enable = false },
    },
 }
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-lspconfig.lua_ls.setup({
+-- lua_ls: register + enable
+vim.lsp.config("lua_ls", {
    on_attach = on_attach,
    capabilities = capabilities,
    settings = lua_ls_setup,
 })
+vim.lsp.enable("lua_ls")
 
--- Vue LSP setup
+-- Vue / TypeScript: ts_ls mit @vue/typescript-plugin
 local mason_registry = require("mason-registry")
 
-local vue_language_server_path = nil
-local vue_package = mason_registry.get_package("vue-language-server")
-
-if not vue_package.spec then
-   vim.api.nvim_echo({ { "spec not here...hmpf", "ErrorMsg" } }, true, {})
-end
-if vue_package and vue_package.spec.install_path then
-   vue_language_server_path = vue_package.spec.install_path .. "/node_modules/@vue/language-server"
-else
-   -- vim.api.nvim_echo({ { "Vue LSP path missing or invalid", "ErrorMsg" } }, true, {})
+local vue_language_server_path ---@type string|nil
+local ok, vue_pkg = pcall(mason_registry.get_package, "vue-language-server")
+if ok and vue_pkg then
+   local install_path = (vue_pkg.get_install_path and vue_pkg:get_install_path()) or nil
+   if install_path then
+      vue_language_server_path = install_path .. "/node_modules/@vue/language-server"
+   end
 end
 
 if vue_language_server_path then
-   lspconfig.ts_ls.setup({
+   vim.lsp.config("ts_ls", {
       init_options = {
          plugins = {
             {
@@ -134,10 +114,10 @@ if vue_language_server_path then
       capabilities = capabilities,
       filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
    })
+   vim.lsp.enable("ts_ls")
 end
 
--- Flutter LSP setup
-
+-- Flutter
 require("flutter-tools").setup({
    lsp = {
       on_attach = on_attach,
@@ -150,16 +130,17 @@ local servers = {
    "basedpyright",
    "taplo",
    "bashls",
-   "volar",
+   "vue_ls",
    "marksman",
 }
 
-for _, lsp in pairs(servers) do
-   lspconfig[lsp].setup({
+for _, name in ipairs(servers) do
+   vim.lsp.config(name, {
       on_attach = on_attach,
       capabilities = capabilities,
    })
+   vim.lsp.enable(name)
 end
 
--- Deactivate lsp diagnostics like "E501 Line to long"
+-- Disable diagnostics publishing if gewünscht
 vim.lsp.handlers["textDocument/publishDiagnostics"] = function() end
