@@ -42,6 +42,7 @@ require("lazy").setup({
    },
    require("plugins.which-key"),
    require("plugins.smoji"),
+   require("plugins.icons"),
    require("plugins.devcontainer"),
 
    -- Markdown Tooling
