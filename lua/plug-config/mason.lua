@@ -13,6 +13,9 @@ require("mason-tool-installer").setup({
    ensure_installed = {
       -- LSP
       "vue-language-server", --vue
+      "copilot-language-server", -- github copilot integration
+      --- DAP
+      "codelldb", -- rust
       -- Linter
       "flake8", -- python
       "pyproject-flake8", -- python
@@ -28,6 +31,7 @@ require("mason-tool-installer").setup({
       "black", -- python
       "yamlfmt", -- yaml
       "taplo", -- toml
+      "dcm", -- dart
    },
 })
 
