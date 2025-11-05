@@ -8,6 +8,7 @@ require("nvim-treesitter.configs").setup({
       "html",
       "vue",
       "json",
+      "jsonc",
       "yaml",
       "markdown",
       "typescript",

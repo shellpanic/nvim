@@ -42,6 +42,7 @@ require("lazy").setup({
    },
    require("plugins.which-key"),
    require("plugins.smoji"),
+   require("plugins.devcontainer"),
 
    -- Markdown Tooling
    require("plugins.render-markdown"), -- before cmp since it integrates in it
