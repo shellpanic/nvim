@@ -3,15 +3,7 @@ return {
    event = { "BufReadPre", "BufNewFile" },
    cmd = { "LintTry" },
    config = function()
-      pcall(function()
-         vim.api.nvim_create_user_command("LintTry", function()
-            require("lint").try_lint()
-         end, {})
-      end)
-   end,
-   config = function()
       local lint = require("lint")
-      local linters = require("lint").linters
       lint.linters_by_ft = {
          python = { "flake8" },
          markdown = { "markdownlint" },
@@ -21,8 +13,13 @@ return {
       vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
          group = lint_augroup,
          callback = function()
-            lint.try_lint()
+            require("lint").try_lint()
          end,
       })
+      pcall(function()
+         vim.api.nvim_create_user_command("LintTry", function()
+            require("lint").try_lint()
+         end, {})
+      end)
    end,
 }
