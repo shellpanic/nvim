@@ -143,5 +143,5 @@ for _, name in ipairs(servers) do
    vim.lsp.enable(name)
 end
 
--- Disable diagnostics publishing if gewünscht
-vim.lsp.handlers["textDocument/publishDiagnostics"] = function() end
+-- Diagnostics are enabled by default; comment the line below back in to disable globally
+-- vim.lsp.handlers["textDocument/publishDiagnostics"] = function() end

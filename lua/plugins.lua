@@ -5,6 +5,9 @@ require("lazy").setup({
       "kylechui/nvim-surround",
       version = "*", -- Use for stability; omit to use `main` branch for the latest features
       event = "VeryLazy",
+      config = function()
+         require("plug-config.surround")
+      end,
    },
    {
       "nvim-neo-tree/neo-tree.nvim",
@@ -14,8 +17,16 @@ require("lazy").setup({
          "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
          "MunifTanjim/nui.nvim",
       },
+      config = function()
+         require("plug-config.neo-tree")
+      end,
    },
-   "terrortylor/nvim-comment",
+   {
+      "terrortylor/nvim-comment",
+      config = function()
+         require("plug-config.comment")
+      end,
+   },
    {
       "windwp/nvim-autopairs",
       event = "InsertEnter",
@@ -29,16 +40,28 @@ require("lazy").setup({
          require("ibl").setup()
       end,
    },
-   { "akinsho/toggleterm.nvim", version = "*", config = true },
+   {
+      "akinsho/toggleterm.nvim",
+      version = "*",
+      config = function()
+         require("plug-config.toggleterm")
+      end,
+   },
    {
       "nvim-telescope/telescope.nvim",
       dependencies = { "nvim-lua/plenary.nvim" },
+      config = function()
+         require("plug-config.telescope")
+      end,
    },
    {
       "AckslD/nvim-neoclip.lua",
       dependencies = {
          { "nvim-telescope/telescope.nvim" },
       },
+      config = function()
+         require("plug-config.neo-clip")
+      end,
    },
    require("plugins.which-key"),
    require("plugins.smoji"),
@@ -52,15 +75,24 @@ require("lazy").setup({
       event = { "VeryLazy" },
       build = "deno task --quiet build:fast",
       config = function()
-         require("peek").setup()
-         vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
-         vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
+         require("plug-config.markdown")
       end,
    },
 
    -- Style
-   "Rigellute/rigel",
-   "ziontee113/color-picker.nvim",
+   {
+      "Rigellute/rigel",
+      priority = 1000,
+      config = function()
+         require("plug-config.rigel")
+      end,
+   },
+   {
+      "ziontee113/color-picker.nvim",
+      config = function()
+         require("plug-config.color-picker")
+      end,
+   },
 
    -- Language Features
    {
@@ -68,15 +100,33 @@ require("lazy").setup({
       dependencies = {
          "WhoIsSethDaniel/mason-tool-installer.nvim",
       },
+      config = function()
+         require("plug-config.mason")
+      end,
    },
    "williamboman/mason-lspconfig.nvim",
 
-   "neovim/nvim-lspconfig",
+   {
+      "neovim/nvim-lspconfig",
+      dependencies = {
+         "folke/neodev.nvim",
+         "hrsh7th/cmp-nvim-lsp",
+      },
+      config = function()
+         require("plug-config.neodev")
+         require("plug-config.lsp")
+      end,
+   },
    "hrsh7th/cmp-nvim-lsp",
    "hrsh7th/cmp-buffer",
    "hrsh7th/cmp-path",
    "hrsh7th/cmp-cmdline",
-   "hrsh7th/nvim-cmp",
+   {
+      "hrsh7th/nvim-cmp",
+      config = function()
+         require("plug-config.cmp")
+      end,
+   },
    "onsails/lspkind.nvim",
    {
       "linrongbin16/lsp-progress.nvim",
@@ -101,9 +151,15 @@ require("lazy").setup({
    "saadparwaiz1/cmp_luasnip",
    "rafamadriz/friendly-snippets",
 
-   { "folke/neodev.nvim", opts = {} },
-
    { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+   "nvim-treesitter/nvim-treesitter-textobjects",
+   {
+      "nvim-treesitter/nvim-treesitter",
+      build = ":TSUpdate",
+      config = function()
+         require("plug-config.treesitter")
+      end,
+   },
    "nvim-treesitter/nvim-treesitter-textobjects",
 
    require("plugins.flutter-tools"),
@@ -115,6 +171,9 @@ require("lazy").setup({
          "BufReadPre",
          "BufNewFile",
       },
+      config = function()
+         require("plug-config.linter")
+      end,
    },
    {
       "stevearc/conform.nvim",
@@ -122,29 +181,41 @@ require("lazy").setup({
          "BufReadPre",
          "BufNewFile",
       },
+      config = function()
+         require("plug-config.conform")
+      end,
    },
 
    -- Debugging
-   "stevearc/aerial.nvim",
-   "mfussenegger/nvim-dap",
+   {
+      "stevearc/aerial.nvim",
+      config = function()
+         require("plug-config.aerial")
+      end,
+   },
+   {
+      "mfussenegger/nvim-dap",
+      dependencies = { "rcarriga/nvim-dap-ui" },
+      config = function()
+         require("plug-config.dap")
+      end,
+   },
    { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" } },
    {
       "mfussenegger/nvim-dap-python",
       dependencies = { "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui" },
-      config = function(_, opts)
-         local path = "/home/fla/.local/share/nvim/mason/packages/debugpy/venv/bin/python"
-         require("dap-python").setup(path)
-      end,
    },
    {
       "mrcjkb/rustaceanvim",
       version = "^4", -- Recommended
       ft = { "rust" },
-      {
-         "zbirenbaum/copilot-cmp",
-         config = function()
-            require("copilot_cmp").setup()
-         end,
+      dependencies = {
+         {
+            "zbirenbaum/copilot-cmp",
+            config = function()
+               require("copilot_cmp").setup()
+            end,
+         },
       },
    },
 
@@ -158,34 +229,12 @@ require("lazy").setup({
          "antoinemadec/FixCursorHold.nvim",
          "nvim-treesitter/nvim-treesitter",
       },
+      config = function()
+         require("plug-config.neotest")
+      end,
    },
 
    -- AI
    require("plugins.copilot-chat"),
    require("plugins.codex"),
 })
-
--- Source configurations
-require("plug-config.rigel")
-require("plug-config.neo-tree")
-require("plug-config.comment")
-require("plug-config.surround")
-require("plug-config.color-picker")
-require("plug-config.telescope")
-require("plug-config.toggleterm")
-require("plug-config.neo-clip")
-
-require("plug-config.mason")
-require("plug-config.cmp")
-require("plug-config.lsp")
-require("plug-config.treesitter")
-require("plug-config.neodev")
-require("plug-config.aerial")
-
-require("plug-config.conform")
-require("plug-config.linter")
-require("plug-config.markdown")
-
-require("plug-config.dap")
-require("plug-config.rustacean")
-require("plug-config.neotest")

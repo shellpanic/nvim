@@ -1,6 +1,6 @@
 local default_options = { noremap = true, silent = true, nowait = false }
 local function set_keymap(mode, shortcut, action, description, opts)
-   opts = vim.tbl_extend("force", opts or {}, { desc = description, unpack(default_options) })
+   opts = vim.tbl_extend("force", default_options, opts or {}, { desc = description })
    vim.keymap.set(mode, shortcut, action, opts)
 end
 
@@ -43,7 +43,13 @@ set_keymap("n", search_prefix, ":noh<CR>", "Clear search highlight")
 set_keymap("n", search_prefix .. "f", ":Telescope find_files hidden=true no_ignore=true<CR>", "Find files")
 set_keymap("n", search_prefix .. "g", ":Telescope live_grep<CR>", "Live grep")
 set_keymap("n", search_prefix .. "r", ":Telescope neoclip initial_mode=normal<CR>", "Search clipboard history")
-set_keymap("n", search_prefix .. "m", ":Telescope macroscope initial_mode=normal<CR>", "Search macros")
+-- Only map macroscope if available; avoids errors when extension is missing
+pcall(function()
+   local ok = pcall(require, "telescope")
+   if ok then
+      set_keymap("n", search_prefix .. "m", ":Telescope macroscope initial_mode=normal<CR>", "Search macros")
+   end
+end)
 
 -- String manipulation
 set_keymap("i", "<C-BS>", "<C-o>db", "Delete word before cursor")
@@ -62,22 +68,25 @@ set_keymap("n", "<C-S-s>", ":wa<CR>", "Save all files")
 
 -- Style
 set_keymap("n", "<Leader>c", ":PickColor<CR>", "Pick a color")
-set_keymap("i", "<C-Leader>c", ":PickColorInsert<CR>", "Pick a color in insert mode")
 
 -- Formatting and Linting
-local conform = require("conform")
-local lint = require("lint")
 
 set_keymap({ "n", "v" }, "<Leader>mp", function()
-   conform.format({
-      lsp_fallback = true,
-      async = false,
-      timeout_ms = 500,
-   })
+   local ok, conform = pcall(require, "conform")
+   if ok then
+      conform.format({
+         lsp_fallback = true,
+         async = false,
+         timeout_ms = 500,
+      })
+   end
 end, "Format file or range (in visual mode)")
 
 set_keymap("n", "<C-ll>", function()
-   lint.try_lint()
+   local ok, lint = pcall(require, "lint")
+   if ok then
+      lint.try_lint()
+   end
 end, "Trigger linting for current file")
 
 -- Code
@@ -93,9 +102,11 @@ set_keymap("n", "<Leader><Tab>", ":Neotree buffers float toggle reveal dir=./ se
 set_keymap("n", "<Leader>o", ":AerialToggle<CR>", "Toggle Outline")
 
 -- LSP
-local lsp_signature = require("lsp_signature")
 set_keymap("n", "<Leader>ls", function()
-   lsp_signature.toggle_float_win()
+   local ok, lsp_signature = pcall(require, "lsp_signature")
+   if ok then
+      lsp_signature.toggle_float_win()
+   end
 end, "Toggle LSP signature floating window")
 
 -- Copilot
@@ -129,49 +140,95 @@ set_keymap("n", terminal_prefix .. "g", "<cmd>lua _lazygit_toggle()<CR>", "Open 
 set_keymap("n", terminal_prefix .. "d", "<cmd>lua _lazydocker_toggle()<CR>", "Open lazydocker tui")
 
 -- Test Framework
-local neotest = require("neotest")
 local test_prefix = "<Leader>i" -- inspect
 
-set_keymap(
-   "n",
-   test_prefix .. "wf",
-   ':lua require"neotest".watch.toggle(vim.fn.expand("%"))<CR>',
-   "Toggle watch for the current file"
-)
-set_keymap("n", test_prefix .. "s", ':lua require"neotest".summary.toggle()<CR>', "Toggle test summary")
-set_keymap("n", test_prefix .. "sn", ':lua require"neotest".run.stop()<CR>', "Stop the current test run")
-set_keymap("n", test_prefix .. "w", ':lua require"neotest".watch.toggle()<CR>', "Toggle watch for tests")
-set_keymap("n", test_prefix .. "r", ':lua require"neotest".run.run()<CR><Esc>', "Run tests")
-set_keymap("n", test_prefix .. "o", ':lua require"neotest".output.open({ enter = true })<CR>', "Open test output")
-set_keymap(
-   "n",
-   test_prefix .. "os",
-   ':lua require"neotest".output.open({ short = true, enter = true })<CR>',
-   "Open short test output"
-)
-set_keymap("n", test_prefix .. "op", ':lua require"neotest".output_panel.toggle()<CR>', "Toggle test output panel")
-set_keymap("n", test_prefix .. "oc", ':lua require"neotest".output_panel.clear()<CR>', "Clear test output panel")
-set_keymap(
-   "n",
-   test_prefix .. "rf",
-   ':lua require"neotest".run.run(vim.fn.expand("%"))<CR>',
-   "Run tests in the current file"
-)
-set_keymap("n", test_prefix .. "d", ':lua require"neotest".run.run({ strategy = "dap" })<CR>', "Run tests with DAP")
-set_keymap(
-   "n",
-   test_prefix .. "df",
-   ':lua require"neotest".run.run(vim.fn.expand("%"), { strategy = "dap" })<CR>',
-   "Run tests in the current file with DAP"
-)
-set_keymap("n", test_prefix .. "a", ':lua require"neotest".run.attach()<CR>', "Attach to the current test run")
+set_keymap("n", test_prefix .. "wf", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.watch.toggle(vim.fn.expand("%"))
+   end
+end, "Toggle watch for the current file")
+set_keymap("n", test_prefix .. "s", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.summary.toggle()
+   end
+end, "Toggle test summary")
+set_keymap("n", test_prefix .. "sn", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.run.stop()
+   end
+end, "Stop the current test run")
+set_keymap("n", test_prefix .. "w", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.watch.toggle()
+   end
+end, "Toggle watch for tests")
+set_keymap("n", test_prefix .. "r", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.run.run()
+   end
+end, "Run tests")
+set_keymap("n", test_prefix .. "o", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.output.open({ enter = true })
+   end
+end, "Open test output")
+set_keymap("n", test_prefix .. "os", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.output.open({ short = true, enter = true })
+   end
+end, "Open short test output")
+set_keymap("n", test_prefix .. "op", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.output_panel.toggle()
+   end
+end, "Toggle test output panel")
+set_keymap("n", test_prefix .. "oc", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.output_panel.clear()
+   end
+end, "Clear test output panel")
+set_keymap("n", test_prefix .. "rf", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.run.run(vim.fn.expand("%"))
+   end
+end, "Run tests in the current file")
+set_keymap("n", test_prefix .. "d", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.run.run({ strategy = "dap" })
+   end
+end, "Run tests with DAP")
+set_keymap("n", test_prefix .. "df", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.run.run(vim.fn.expand("%"), { strategy = "dap" })
+   end
+end, "Run tests in the current file with DAP")
+set_keymap("n", test_prefix .. "a", function()
+   local ok, neotest = pcall(require, "neotest")
+   if ok then
+      neotest.run.attach()
+   end
+end, "Attach to the current test run")
 
 -- Debugger
-local dap_python = require("dap-python")
 
 set_keymap("n", "<Leader>db", ':lua require"dap".toggle_breakpoint()<CR>', "Toggle breakpoint")
 set_keymap("n", "<Leader>dpr", function()
-   dap_python.test_method()
+   local ok, dap_python = pcall(require, "dap-python")
+   if ok then
+      dap_python.test_method()
+   end
 end, "Run Python test method with DAP")
 set_keymap("n", "<F3>", ':lua require"dap".terminate()<CR>', "Terminate debugging session")
 set_keymap("n", "<F5>", ':lua require"dap".continue()<CR>', "Continue debugging")

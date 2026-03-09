@@ -2,4 +2,4 @@
 vim.o.termguicolors = true
 
 ---- enable the theme
-vim.cmd.colorscheme "rigel"
+vim.cmd.colorscheme("rigel")

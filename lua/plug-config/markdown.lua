@@ -20,3 +20,11 @@ require("peek").setup({
    throttle_time = "auto", -- minimum amount of time in milliseconds
    -- that has to pass before starting new render
 })
+
+-- Convenience commands (match previous behavior from plugin spec)
+vim.api.nvim_create_user_command("PeekOpen", function()
+   require("peek").open()
+end, {})
+vim.api.nvim_create_user_command("PeekClose", function()
+   require("peek").close()
+end, {})

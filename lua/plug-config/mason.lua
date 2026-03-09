@@ -6,7 +6,6 @@ require("mason").setup({
          package_uninstalled = "✗",
       },
    },
-   ensure_installed = { "debugpy" },
 })
 
 require("mason-tool-installer").setup({
@@ -16,12 +15,14 @@ require("mason-tool-installer").setup({
       "copilot-language-server", -- github copilot integration
       --- DAP
       "codelldb", -- rust
+      "debugpy", -- python
       -- Linter
       "flake8", -- python
       "pyproject-flake8", -- python
       "eslint_d", -- js
       "markdownlint", --markdown
       "selene", --lua
+      "ast-grep", -- rust
       -- Formatter
       "prettier", -- a lot
       "stylua", -- lua

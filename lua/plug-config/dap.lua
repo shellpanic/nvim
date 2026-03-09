@@ -3,7 +3,7 @@ dapui.setup()
 
 local dap = require("dap")
 
-vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "red", linehl = "", numhl = "" })
+vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticError", linehl = "", numhl = "" })
 vim.fn.sign_define("DapStopped", { text = "󰋇", texthl = "DapStopped", linehl = "DapStopped", numhl = "DapStopped" })
 vim.fn.sign_define(
    "DapBreakpointCondition",
@@ -33,10 +33,27 @@ require("dap.ext.vscode").load_launchjs(nil, { python = { "py" } })
 
 -- Single DAP client configuration
 -- Python
-local dap_python = require("dap-python")
+local function setup_debugpy()
+   local ok, dap_python = pcall(require, "dap-python")
+   if not ok then
+      return
+   end
+   local python_path = nil
+   local ok_mason, mason_registry = pcall(require, "mason-registry")
+   if ok_mason then
+      local ok_pkg, pkg = pcall(mason_registry.get_package, "debugpy")
+      if ok_pkg and pkg and pkg.get_install_path then
+         local install_path = pkg:get_install_path()
+         python_path = install_path .. "/venv/bin/python"
+      end
+   end
+   python_path = python_path or vim.fn.exepath("python3") or "python3"
+   dap_python.setup(python_path)
+   dap_python.test_runner = "pytest"
+end
 
-dap_python.setup("~/.virtualenvs/debugpy/bin/python")
-dap_python.test_runner = "pytest"
+setup_debugpy()
+
 table.insert(require("dap").configurations.python, {
    type = "python",
    request = "launch",
