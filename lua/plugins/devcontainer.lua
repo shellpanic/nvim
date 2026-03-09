@@ -1,5 +1,5 @@
 return {
-   "https://codeberg.org/esensar/nvim-dev-container",
+   "https://github.com/esensar/nvim-dev-container",
    lazy = false,
    dependencies = {
       "nvim-treesitter/nvim-treesitter",
