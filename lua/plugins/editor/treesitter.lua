@@ -25,6 +25,10 @@ return {
             highlight = { enable = true, disable = {}, additional_vim_regex_highlighting = false },
             modules = {},
          })
+         -- Folding powered by Treesitter
+         vim.opt.foldenable = false
+         vim.opt.foldmethod = "expr"
+         vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
          vim.treesitter.language.register("bash", "zsh")
       end,
    },

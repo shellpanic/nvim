@@ -1,6 +1,18 @@
 return {
    "mfussenegger/nvim-lint",
    event = { "BufReadPre", "BufNewFile" },
+   keys = {
+      {
+         "<C-ll>",
+         function()
+            local ok, lint = pcall(require, "lint")
+            if ok then
+               lint.try_lint()
+            end
+         end,
+         desc = "Trigger linting for current file",
+      },
+   },
    config = function()
       local lint = require("lint")
       local linters = require("lint").linters

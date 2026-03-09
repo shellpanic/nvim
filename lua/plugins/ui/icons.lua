@@ -1,1 +1,1 @@
-return require("plugins.icons")
+return { "nvim-mini/mini.nvim", version = "*" }

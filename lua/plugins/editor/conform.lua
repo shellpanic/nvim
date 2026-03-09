@@ -1,6 +1,19 @@
 return {
    "stevearc/conform.nvim",
    event = { "BufReadPre", "BufNewFile" },
+   keys = {
+      {
+         "<Leader>mp",
+         function()
+            local ok, conform = pcall(require, "conform")
+            if ok then
+               conform.format({ lsp_fallback = true, async = false, timeout_ms = 500 })
+            end
+         end,
+         mode = { "n", "v" },
+         desc = "Format file or range",
+      },
+   },
    config = function()
       local conform = require("conform")
       conform.setup({

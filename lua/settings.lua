@@ -25,6 +25,4 @@ opt.listchars = {
 }
 opt.list = true
 
-opt.foldenable = false
-opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()"
+-- Folding is configured by Treesitter plugin
