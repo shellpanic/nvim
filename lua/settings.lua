@@ -3,6 +3,10 @@ local opt = vim.opt
 
 vim.g.mapleader = "-"
 
+-- Disable unused providers to silence health warnings
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 opt.number = true
 opt.relativenumber = true
 
