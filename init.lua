@@ -15,3 +15,15 @@ vim.opt.rtp:prepend(lazypath)
 require("settings")
 require("plugins")
 require("keymap")
+
+-- Domain keymaps (side-effect modules)
+pcall(require, "plugins.ui.keymaps")
+pcall(require, "plugins.editor.keymaps")
+pcall(require, "plugins.dap.keymaps")
+pcall(require, "plugins.testing.keymaps")
+pcall(require, "plugins.ai.keymaps")
+pcall(require, "plugins.markdown.keymaps")
+pcall(require, "plugins.misc.keymaps")
+
+-- Ensure theme is applied even if plugin loads later
+pcall(require, "plug-config.rigel")

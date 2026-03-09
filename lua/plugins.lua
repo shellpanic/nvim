@@ -1,14 +1,45 @@
-local loader = require("plugins._loader")
+return require("lazy").setup({
+   -- UI and Theme
+   require("plugins.ui.rigel"),
+   require("plugins.ui.icons"),
+   require("plugins.ui.indent"),
+   require("plugins.ui.lualine"),
+   require("plugins.ui.neo-tree"),
 
-local specs = loader.collect({
-   "plugins/ui",
-   "plugins/editor",
-   "plugins/markdown",
-   "plugins/lsp",
-   "plugins/dap",
-   "plugins/testing",
-   "plugins/ai",
-   "plugins/misc",
+   -- Editor
+   require("plugins.editor.which-key"),
+   require("plugins.editor.comment"),
+   require("plugins.editor.autopairs"),
+   require("plugins.editor.indent"),
+   require("plugins.editor.telescope"),
+   require("plugins.editor.neo-clip"),
+   require("plugins.editor.toggleterm"),
+   require("plugins.editor.treesitter"),
+   require("plugins.editor.linter"),
+   require("plugins.editor.conform"),
+   require("plugins.editor.cmp"),
+
+   -- Markdown
+   require("plugins.markdown.render-markdown"),
+   require("plugins.markdown.peek"),
+
+   -- LSP
+   require("plugins.lsp.mason"),
+   require("plugins.lsp.lsp"),
+   require("plugins.lsp.flutter-tools"),
+   require("plugins.lsp.rustacean"),
+
+   -- DAP
+   require("plugins.dap.dap"),
+
+   -- Testing
+   require("plugins.testing.neotest"),
+
+   -- AI
+   require("plugins.ai.copilot-chat"),
+   require("plugins.ai.codex"),
+
+   -- Misc
+   require("plugins.misc.devcontainer"),
+   require("plugins.misc.smoji"),
 })
-
-return require("lazy").setup(specs)

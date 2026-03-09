@@ -17,3 +17,6 @@ WRN 2026-03-09T10:07:00.441 ?.55244    server_start:199: Failed to start server:
 WRN 2026-03-09T10:07:06.148 ?.55308    server_start:199: Failed to start server: operation not permitted: /mnt/wslg/runtime-dir/nvim.55308.0
 WRN 2026-03-09T10:07:16.299 ?.55483    server_start:199: Failed to start server: operation not permitted: /mnt/wslg/runtime-dir/nvim.55483.0
 WRN 2026-03-09T10:19:32.556 ?.55919    server_start:199: Failed to start server: operation not permitted: /mnt/wslg/runtime-dir/nvim.55919.0
+WRN 2026-03-09T10:26:40.689 ?.58829    server_start:199: Failed to start server: operation not permitted: /mnt/wslg/runtime-dir/nvim.58829.0
+WRN 2026-03-09T10:27:10.622 ?.59220    server_start:199: Failed to start server: operation not permitted: /mnt/wslg/runtime-dir/nvim.59220.0
+WRN 2026-03-09T10:27:21.177 ?.59455    server_start:199: Failed to start server: operation not permitted: /mnt/wslg/runtime-dir/nvim.59455.0
