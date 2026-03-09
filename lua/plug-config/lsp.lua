@@ -130,6 +130,7 @@ local servers = {
    "basedpyright",
    "taplo",
    "bashls",
+   "rust_analyzer",
    "vue_ls",
    "marksman",
 }
