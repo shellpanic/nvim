@@ -18,15 +18,13 @@ CORE=(
   ripgrep        # rg for telescope/grep
   fd             # fd for telescope
   xclip          # clipboard provider
-  tree-sitter    # CLI to remove nvim-treesitter warning
 )
 
 # Language toolchains used by mason, treesitter build, LSPs, etc.
-LANG=(
+LANG_PKGS=(
   gcc
   make
   nodejs
-  npm
   python3
   python3-pip
   go
@@ -41,14 +39,65 @@ OPTIONAL=(
   julia
 )
 
-echo "[*] Installing core tools: ${CORE[*]}"
-sudo xbps-install -y ${=CORE}
+ensure_pkg() {
+  local pkg="$1"
+  if xbps-query -i "$pkg" >/dev/null 2>&1; then
+    echo "[=] $pkg already installed"
+  else
+    echo "[+] Installing $pkg"
+    sudo xbps-install -y "$pkg"
+  fi
+}
 
-echo "[*] Installing language toolchains: ${LANG[*]}"
-sudo xbps-install -y ${=LANG}
+echo "[*] Ensuring core tools..."
+for p in ${CORE[@]}; do ensure_pkg "$p"; done
 
-echo "[*] Installing optional extras (can be skipped safely): ${OPTIONAL[*]}"
-sudo xbps-install -y ${=OPTIONAL} || true
+echo "[*] Ensuring language toolchains..."
+for p in ${LANG_PKGS[@]}; do ensure_pkg "$p"; done
+
+echo "[*] Ensuring optional extras (safe to skip)..."
+for p in ${OPTIONAL[@]}; do ensure_pkg "$p" || true; done
+
+# Ensure tree-sitter CLI is available in PATH
+ensure_tree_sitter_cli() {
+  if command -v tree-sitter >/dev/null 2>&1; then
+    echo "[=] tree-sitter CLI already available"
+    return 0
+  fi
+  echo "[*] Attempting to install tree-sitter CLI via xbps..."
+  if ensure_pkg tree-sitter-cli 2>/dev/null; then
+    if command -v tree-sitter >/dev/null 2>&1; then
+      echo "[✓] tree-sitter CLI installed via xbps"
+      return 0
+    fi
+  fi
+  # Some repositories ship CLI under the 'tree-sitter' package
+  if ensure_pkg tree-sitter 2>/dev/null; then
+    if command -v tree-sitter >/dev/null 2>&1; then
+      echo "[✓] tree-sitter CLI installed via xbps (tree-sitter)"
+      return 0
+    fi
+  fi
+  echo "[*] Falling back to npm global install for tree-sitter-cli..."
+  if command -v npm >/dev/null 2>&1; then
+    sudo npm -g install tree-sitter-cli || true
+    local npm_bin
+    npm_bin=$(npm bin -g 2>/dev/null || true)
+    if [ -n "$npm_bin" ] && [ -x "$npm_bin/tree-sitter" ]; then
+      echo "[*] Linking $npm_bin/tree-sitter to /usr/local/bin/tree-sitter"
+      sudo ln -sf "$npm_bin/tree-sitter" /usr/local/bin/tree-sitter || true
+    fi
+  else
+    echo "[!] npm not found; installed nodejs typically provides npm on Void. Ensure npm is available to install tree-sitter-cli."
+  fi
+  if command -v tree-sitter >/dev/null 2>&1; then
+    echo "[✓] tree-sitter CLI available"
+    return 0
+  fi
+  echo "[!] Could not ensure tree-sitter CLI. You may need to add npm global bin to PATH or install tree-sitter-cli from repos."
+  return 1
+}
+
+ensure_tree_sitter_cli || true
 
 echo "[✓] Done. You can re-run Neovim healthchecks now."
-

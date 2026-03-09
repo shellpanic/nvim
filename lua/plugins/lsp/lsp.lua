@@ -85,37 +85,32 @@ return {
          vim.lsp.config("lua_ls", { on_attach = on_attach, capabilities = capabilities, settings = lua_ls_setup })
          vim.lsp.enable("lua_ls")
 
-         -- Vue / TypeScript with @vue/typescript-plugin
-         local mason_registry = require("mason-registry")
-         local vue_language_server_path
-         local ok, vue_pkg = pcall(mason_registry.get_package, "vue-language-server")
-         if ok and vue_pkg then
-            local install_path = vue_pkg.get_install_path and vue_pkg:get_install_path() or nil
-            if install_path then
-               vue_language_server_path = install_path .. "/node_modules/@vue/language-server"
-            end
-         end
-         if vue_language_server_path then
-            vim.lsp.config("ts_ls", {
-               init_options = {
-                  plugins = {
-                     { name = "@vue/typescript-plugin", location = vue_language_server_path, languages = { "vue" } },
-                  },
-               },
-               on_attach = on_attach,
-               capabilities = capabilities,
-               filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
-            })
-            vim.lsp.enable("ts_ls")
-         end
+         -- Configure TypeScript/JavaScript separately from Vue to avoid overlap
+         vim.lsp.config("ts_ls", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
+         })
+         vim.lsp.enable("ts_ls")
 
          require("flutter-tools").setup({ lsp = { on_attach = on_attach, capabilities = capabilities } })
 
-         local servers = { "basedpyright", "taplo", "bashls", "vue_ls", "marksman" }
-         for _, name in ipairs(servers) do
+         -- Configure standard servers
+         for _, name in ipairs({ "basedpyright", "taplo", "bashls", "vue_ls" }) do
             vim.lsp.config(name, { on_attach = on_attach, capabilities = capabilities })
             vim.lsp.enable(name)
          end
+
+         -- Override marksman to avoid unknown filetype 'markdown.mdx'
+         vim.lsp.config("marksman", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            filetypes = { "markdown" },
+         })
+         vim.lsp.enable("marksman")
+
+         -- Reduce LSP log noise and file size
+         pcall(vim.lsp.set_log_level, "ERROR")
 
          -- Diagnostics enabled by default; uncomment to disable
          -- vim.lsp.handlers["textDocument/publishDiagnostics"] = function() end
