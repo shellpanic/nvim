@@ -2,58 +2,14 @@ return {
    {
       "mfussenegger/nvim-dap",
       dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
-      keys = {
-         {
-            "<Leader>db",
-            function()
-               require("dap").toggle_breakpoint()
-            end,
-            desc = "Toggle breakpoint",
-         },
-         {
-            "<Leader>dpr",
-            function()
-               pcall(function()
-                  require("dap-python").test_method()
-               end)
-            end,
-            desc = "DAP Py test",
-         },
-         {
-            "<F3>",
-            function()
-               require("dap").terminate()
-            end,
-            desc = "DAP terminate",
-         },
-         {
-            "<F5>",
-            function()
-               require("dap").continue()
-            end,
-            desc = "DAP continue",
-         },
-         {
-            "<F10>",
-            function()
-               require("dap").step_over()
-            end,
-            desc = "DAP step over",
-         },
-         {
-            "<F11>",
-            function()
-               require("dap").step_into()
-            end,
-            desc = "DAP step into",
-         },
-         {
-            "<F12>",
-            function()
-               require("dap").step_out()
-            end,
-            desc = "DAP step out",
-         },
+      cmd = {
+         "DapToggleBreakpoint",
+         "DapTerminate",
+         "DapContinue",
+         "DapStepOver",
+         "DapStepInto",
+         "DapStepOut",
+         "DapPythonTestMethod",
       },
       config = function()
          local dapui = require("dapui")
@@ -105,6 +61,12 @@ return {
             dap_python.test_runner = "pytest"
          end
          setup_debugpy()
+         -- user command wrapper for python test method
+         pcall(function()
+            vim.api.nvim_create_user_command("DapPythonTestMethod", function()
+               require("dap-python").test_method()
+            end, {})
+         end)
          table.insert(require("dap").configurations.python, {
             type = "python",
             request = "launch",

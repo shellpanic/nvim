@@ -1,8 +1,6 @@
 return {
    "stevearc/aerial.nvim",
-   keys = {
-      { "<Leader>o", ":AerialToggle<CR>", desc = "Toggle Outline" },
-   },
+   cmd = { "AerialToggle" },
    config = function()
       require("aerial").setup({
          backends = { "treesitter", "lsp", "markdown", "man" },

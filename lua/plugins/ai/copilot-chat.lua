@@ -5,11 +5,7 @@ return {
       { "nvim-lua/plenary.nvim", branch = "master" },
    },
    build = "make tiktoken",
-   keys = {
-      { "<Leader>cc", ":CopilotChatToggle<CR>", desc = "Toggle Copilot Chat" },
-      { "<Leader>ccr", ":CopilotChatReset<CR>", desc = "Reset Copilot Chat" },
-      { mode = "v", "<Leader>ccs", ":CopilotChat<CR>", desc = "Copilot Chat with selection" },
-   },
+   cmd = { "CopilotChatToggle", "CopilotChatReset", "CopilotChat" },
    opts = {
       model = "gpt-4o",
       agent = "copilot",

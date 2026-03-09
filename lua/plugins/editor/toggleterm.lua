@@ -1,30 +1,7 @@
 return {
    "akinsho/toggleterm.nvim",
    version = "*",
-   keys = {
-      { "<Leader>t", ":ToggleTerm direction=tab<CR>", desc = "Open terminal in a new tab" },
-      {
-         "<Leader>tb",
-         ":ToggleTerm direction=horizontal<CR>",
-         desc = "Open terminal at bottom",
-      },
-      { "<Leader>xv", ":ToggleTermSendVisualSelection<CR>", mode = "v", desc = "Send selection to terminal" },
-      {
-         "<Leader>tg",
-         function()
-            _lazygit_toggle()
-         end,
-         desc = "Open lazygit tui",
-      },
-      {
-         "<Leader>td",
-         function()
-            _lazydocker_toggle()
-         end,
-         desc = "Open lazydocker tui",
-      },
-      { "<C-t>", "<C-\\><C-n>", mode = "t", desc = "Exit terminal mode" },
-   },
+   cmd = { "ToggleTerm", "ToggleTermSendVisualSelection", "LazyGitToggle", "LazyDockerToggle" },
    config = function()
       require("toggleterm").setup({
          start_in_insert = false,
@@ -81,5 +58,13 @@ return {
       function _lazydocker_toggle()
          lazydocker:toggle()
       end
+
+      -- user commands so mappings can live in domain keymaps
+      vim.api.nvim_create_user_command("LazyGitToggle", function()
+         _lazygit_toggle()
+      end, { force = true })
+      vim.api.nvim_create_user_command("LazyDockerToggle", function()
+         _lazydocker_toggle()
+      end, { force = true })
    end,
 }

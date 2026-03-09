@@ -7,18 +7,6 @@ return {
          { "ray-x/lsp_signature.nvim", event = "VeryLazy" },
          { "linrongbin16/lsp-progress.nvim" },
       },
-      keys = {
-         {
-            "<Leader>ls",
-            function()
-               local ok, lsp_signature = pcall(require, "lsp_signature")
-               if ok then
-                  lsp_signature.toggle_float_win()
-               end
-            end,
-            desc = "Toggle LSP signature window",
-         },
-      },
       config = function()
          require("lsp-progress").setup()
          require("neodev").setup({

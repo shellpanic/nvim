@@ -1,19 +1,7 @@
 return {
    "stevearc/conform.nvim",
    event = { "BufReadPre", "BufNewFile" },
-   keys = {
-      {
-         "<Leader>mp",
-         function()
-            local ok, conform = pcall(require, "conform")
-            if ok then
-               conform.format({ lsp_fallback = true, async = false, timeout_ms = 500 })
-            end
-         end,
-         mode = { "n", "v" },
-         desc = "Format file or range",
-      },
-   },
+   cmd = { "ConformFormat" },
    config = function()
       local conform = require("conform")
       conform.setup({
@@ -46,5 +34,12 @@ return {
          notify_on_error = true,
       })
       conform.formatters.stylua = {}
+      vim.api.nvim_create_user_command("ConformFormat", function(opts)
+         local range = nil
+         if opts.range ~= 0 then
+            range = { start = opts.line1, finish = opts.line2 }
+         end
+         conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, range = range })
+      end, { range = true })
    end,
 }

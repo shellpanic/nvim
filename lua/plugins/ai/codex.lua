@@ -2,15 +2,6 @@ return {
    "johnseth97/codex.nvim",
    lazy = true,
    cmd = { "Codex", "CodexToggle" },
-   keys = {
-      {
-         "<leader>ccc",
-         function()
-            require("codex").toggle()
-         end,
-         desc = "Toggle Codex popup",
-      },
-   },
    opts = {
       keymaps = {},
       border = "double",

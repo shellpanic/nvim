@@ -6,15 +6,7 @@ return {
       "nvim-tree/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
    },
-   keys = {
-      { "<C-n>", ":Neotree toggle<CR>", desc = "Toggle Neo-Tree" },
-      { "<Leader>n", ":Neotree focus<CR>", desc = "Focus Neo-Tree" },
-      {
-         "<Leader><Tab>",
-         ":Neotree buffers float toggle reveal dir=./ selector<CR>",
-         desc = "Toggle Neo-Tree buffers",
-      },
-   },
+   cmd = { "Neotree" },
    config = function()
       require("neo-tree").setup({
          close_if_last_window = true,
