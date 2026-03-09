@@ -2,6 +2,8 @@ return require("lazy").setup({
    -- UI and Theme
    require("plugins.ui.rigel"),
    require("plugins.ui.icons"),
+   require("plugins.ui.devicons"),
+   require("plugins.ui.dressing"),
    require("plugins.ui.indent"),
    require("plugins.ui.lualine"),
    require("plugins.ui.neo-tree"),
@@ -10,7 +12,6 @@ return require("lazy").setup({
    require("plugins.editor.which-key"),
    require("plugins.editor.comment"),
    require("plugins.editor.autopairs"),
-   require("plugins.editor.indent"),
    require("plugins.editor.telescope"),
    require("plugins.editor.neo-clip"),
    require("plugins.editor.toggleterm"),

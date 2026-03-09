@@ -24,6 +24,3 @@ pcall(require, "plugins.testing.keymaps")
 pcall(require, "plugins.ai.keymaps")
 pcall(require, "plugins.markdown.keymaps")
 pcall(require, "plugins.misc.keymaps")
-
--- Ensure theme is applied even if plugin loads later
-pcall(require, "plug-config.rigel")
