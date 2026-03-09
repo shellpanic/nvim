@@ -1,2 +1,2 @@
 -- DAP domain keymaps (placeholders)
-return {}
+-- no return; this module is for side-effect keymaps only
