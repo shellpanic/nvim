@@ -41,7 +41,7 @@ return {
          dap.listeners.before.event_exited["dapui_config"] = function()
             dapui.close()
          end
-         require("dap.ext.vscode").load_launchjs(nil, { python = { "py" } })
+         -- load_launchjs is deprecated; nvim-dap reads .vscode/launch.json on-demand now
          local function setup_debugpy()
             local ok, dap_python = pcall(require, "dap-python")
             if not ok then

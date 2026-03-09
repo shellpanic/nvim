@@ -22,6 +22,8 @@ return {
          local lspkind = require("lspkind")
          local cmp = require("cmp")
          local select_opts = { behavior = cmp.SelectBehavior.Select }
+         local cmp_compare = cmp.config.compare
+         local ok_copilot, copilot_cmp = pcall(require, "copilot_cmp.comparators")
          local has_words_before = function()
             if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
                return false
@@ -47,18 +49,25 @@ return {
             window = { documentation = cmp.config.window.bordered() },
             sorting = {
                priority_weight = 2,
-               comparators = {
-                  require("copilot_cmp.comparators").prioritize,
-                  cmp.config.compare.offset,
-                  cmp.config.compare.exact,
-                  cmp.config.compare.score,
-                  cmp.config.compare.recently_used,
-                  cmp.config.compare.locality,
-                  cmp.config.compare.kind,
-                  cmp.config.compare.sort_text,
-                  cmp.config.compare.length,
-                  cmp.config.compare.order,
-               },
+               comparators = (function()
+                  local list = {
+                     ok_copilot and copilot_cmp.prioritize or nil,
+                     cmp_compare.offset,
+                     cmp_compare.exact,
+                     cmp_compare.score,
+                     cmp_compare.recently_used,
+                     cmp_compare.locality,
+                     cmp_compare.kind,
+                     cmp_compare.sort_text,
+                     cmp_compare.length,
+                     cmp_compare.order,
+                  }
+                  local out = {}
+                  for _, f in ipairs(list) do
+                     if f ~= nil then table.insert(out, f) end
+                  end
+                  return out
+               end)(),
             },
             formatting = {
                format = lspkind.cmp_format({

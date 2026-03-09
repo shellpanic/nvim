@@ -1,10 +1,14 @@
-return require("lazy").setup({
-   { import = "plugins.ui" },
-   { import = "plugins.editor" },
-   { import = "plugins.markdown" },
-   { import = "plugins.lsp" },
-   { import = "plugins.dap" },
-   { import = "plugins.testing" },
-   { import = "plugins.ai" },
-   { import = "plugins.misc" },
+local loader = require("plugins._loader")
+
+local specs = loader.collect({
+   "plugins/ui",
+   "plugins/editor",
+   "plugins/markdown",
+   "plugins/lsp",
+   "plugins/dap",
+   "plugins/testing",
+   "plugins/ai",
+   "plugins/misc",
 })
+
+return require("lazy").setup(specs)
