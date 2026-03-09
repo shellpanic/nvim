@@ -7,6 +7,27 @@ vim.g.mapleader = "-"
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
 
+-- Filetype tweaks
+vim.filetype.add({
+   extension = { mdx = "markdown.mdx" },
+})
+
+-- Minimal health command to skip deprecated checks
+pcall(function()
+   vim.api.nvim_create_user_command("HealthMinimal", function()
+      vim.cmd([[
+        checkhealth lazy
+        checkhealth vim.lsp
+        checkhealth nvim-treesitter
+        checkhealth mason
+        checkhealth vim.provider
+        checkhealth dressing
+        checkhealth telescope
+        checkhealth dap
+      ]])
+   end, { desc = "Run focused health checks only" })
+end)
+
 opt.number = true
 opt.relativenumber = true
 
