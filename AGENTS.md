@@ -30,6 +30,15 @@ Eager UI modules (load at startup):
 - Modules: prefer clear, single‑purpose files; avoid long `init.lua` blocks.
 - Formatting: run `stylua` before commits; keep diffs minimal and focused.
 
+### Keymap Conventions
+- Use mnemonic, phrase‑like leader mappings grouped by domain:
+  - `a`: AI, `s`: Search, `t`: Terminal, `u`: Tests (unit), `l`: LSP, `c`: Code, `e`: Editor, `m`: Misc.
+  - Example phrases: `sc` = “search clear”, `tt` = “terminal tab”, `cf` = “code format”, `co` = “code outline”, `ee` = “editor explorer”, `me` = “misc emoji”.
+- Avoid parent/child overlaps: don’t bind a parent key if children exist (use doubled parents like `tt` instead of `t`).
+- Always set a `desc` on keymaps so which‑key shows friendly labels.
+- Register group names in `lua/plugins/editor/which-key.lua` so domains are visible in the popup.
+- Place side‑effect mappings by domain in `lua/plugins/<domain>/keymaps.lua` and keep plugin‑specific mappings close to their plugin when they’re tightly coupled.
+
 ## Testing Guidelines
 - No formal unit tests. Validate by launching Neovim headless and interactively:
   - Headless load check: `nvim --headless +'qa' -u init.lua` (should exit cleanly).

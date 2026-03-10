@@ -64,7 +64,9 @@ return {
                   }
                   local out = {}
                   for _, f in ipairs(list) do
-                     if f ~= nil then table.insert(out, f) end
+                     if f ~= nil then
+                        table.insert(out, f)
+                     end
                   end
                   return out
                end)(),
