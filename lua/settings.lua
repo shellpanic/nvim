@@ -12,22 +12,6 @@ vim.filetype.add({
    extension = { mdx = "markdown.mdx" },
 })
 
--- Minimal health command to skip deprecated checks
-pcall(function()
-   vim.api.nvim_create_user_command("HealthMinimal", function()
-      vim.cmd([[
-        checkhealth lazy
-        checkhealth vim.lsp
-        checkhealth nvim-treesitter
-        checkhealth mason
-        checkhealth vim.provider
-        checkhealth dressing
-        checkhealth telescope
-        checkhealth dap
-      ]])
-   end, { desc = "Run focused health checks only" })
-end)
-
 opt.number = true
 opt.relativenumber = true
 
@@ -49,5 +33,3 @@ opt.listchars = {
    -- eol = "󱞣",
 }
 opt.list = true
-
--- Folding is configured by Treesitter plugin
