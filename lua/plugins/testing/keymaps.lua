@@ -11,7 +11,8 @@ vim.keymap.set("n", "<Leader>uW", ":NeotestWatchFileToggle<CR>", { silent = true
 
 -- Summary
 vim.keymap.set("n", "<Leader>us", ":NeotestSummaryToggle<CR>", { silent = true, desc = "Tests: Summary toggle" })
-vim.keymap.set("n", "<Leader>usn", ":NeotestRunStop<CR>", { silent = true, desc = "Tests: Stop" })
+-- Avoid parent/child overlap with <leader>us*: use capital S for Stop
+vim.keymap.set("n", "<Leader>uS", ":NeotestRunStop<CR>", { silent = true, desc = "Tests: Stop" })
 
 -- Output
 vim.keymap.set("n", "<Leader>uo", ":NeotestOutputOpen<CR>", { silent = true, desc = "Tests: Output open" })
