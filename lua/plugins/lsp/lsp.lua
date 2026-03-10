@@ -29,45 +29,56 @@ return {
             lsp_signature.on_attach(lsp_signature_cfg, bufnr)
             local bufopts = { noremap = true, silent = true, buffer = bufnr }
             local p = "<Leader>l"
-            vim.keymap.set("n", p .. "D", vim.lsp.buf.declaration, { desc = "Go to declaration", unpack(bufopts) })
-            vim.keymap.set("n", p .. "d", vim.lsp.buf.definition, { desc = "Go to definition", unpack(bufopts) })
-            vim.keymap.set("n", p .. "r", vim.lsp.buf.references, { desc = "Find references", unpack(bufopts) })
-            vim.keymap.set(
-               "n",
-               p .. "i",
-               vim.lsp.buf.implementation,
-               { desc = "Go to implementation", unpack(bufopts) }
-            )
-            vim.keymap.set("n", "C-S-o", vim.lsp.buf.hover, { desc = "Show hover information", unpack(bufopts) })
-            vim.keymap.set("n", "<C-p>", vim.lsp.buf.signature_help, { desc = "Show signature help", unpack(bufopts) })
+            vim.keymap.set("n", p .. "D", vim.lsp.buf.declaration, { desc = "LSP: Declaration", unpack(bufopts) })
+            vim.keymap.set("n", p .. "d", vim.lsp.buf.definition, { desc = "LSP: Definition", unpack(bufopts) })
+            vim.keymap.set("n", p .. "r", vim.lsp.buf.references, { desc = "LSP: References", unpack(bufopts) })
+            vim.keymap.set("n", p .. "i", vim.lsp.buf.implementation, { desc = "LSP: Implementation", unpack(bufopts) })
+            vim.keymap.set("n", p .. "h", vim.lsp.buf.hover, { desc = "LSP: Hover", unpack(bufopts) })
+            vim.keymap.set("n", p .. "K", vim.lsp.buf.signature_help, { desc = "LSP: Signature help", unpack(bufopts) })
             vim.keymap.set(
                "n",
                p .. "wa",
                vim.lsp.buf.add_workspace_folder,
-               { desc = "Add workspace folder", unpack(bufopts) }
+               { desc = "LSP: Workspace add", unpack(bufopts) }
             )
             vim.keymap.set(
                "n",
                p .. "wr",
                vim.lsp.buf.remove_workspace_folder,
-               { desc = "Remove workspace folder", unpack(bufopts) }
+               { desc = "LSP: Workspace remove", unpack(bufopts) }
             )
             vim.keymap.set("n", p .. "wl", function()
                print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-            end, { desc = "List workspace folders", unpack(bufopts) })
+            end, { desc = "LSP: Workspace list", unpack(bufopts) })
             vim.keymap.set(
                "n",
-               p .. "td",
+               p .. "t",
                vim.lsp.buf.type_definition,
-               { desc = "Go to type definition", unpack(bufopts) }
+               { desc = "LSP: Type definition", unpack(bufopts) }
             )
-            vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename symbol", unpack(bufopts) })
-            vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, { desc = "Show code actions", unpack(bufopts) })
-            vim.keymap.set("n", "<space>f", function()
+            vim.keymap.set(
+               "n",
+               p .. "e",
+               vim.diagnostic.open_float,
+               { desc = "LSP: Diagnostics float", unpack(bufopts) }
+            )
+            vim.keymap.set(
+               "n",
+               p .. "q",
+               vim.diagnostic.setloclist,
+               { desc = "LSP: Diagnostics loclist", unpack(bufopts) }
+            )
+
+            -- Keep function keys for rename/actions, and add leader aliases
+            vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
+            vim.keymap.set("n", p .. "rn", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
+            vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, { desc = "LSP: Code actions", unpack(bufopts) })
+            vim.keymap.set("n", p .. "a", vim.lsp.buf.code_action, { desc = "LSP: Code actions", unpack(bufopts) })
+
+            -- Formatting under code group too, but provide LSP alias
+            vim.keymap.set("n", p .. "f", function()
                vim.lsp.buf.format({ async = true })
-            end, { desc = "Format code", unpack(bufopts) })
-            vim.keymap.set("n", p .. "e", vim.diagnostic.open_float, { desc = "Show diagnostics", unpack(bufopts) })
-            vim.keymap.set("n", p .. "q", vim.diagnostic.setloclist, { desc = "Diagnostics loclist", unpack(bufopts) })
+            end, { desc = "LSP: Format", unpack(bufopts) })
          end
 
          local lua_ls_setup = {
@@ -85,37 +96,32 @@ return {
          vim.lsp.config("lua_ls", { on_attach = on_attach, capabilities = capabilities, settings = lua_ls_setup })
          vim.lsp.enable("lua_ls")
 
-         -- Vue / TypeScript with @vue/typescript-plugin
-         local mason_registry = require("mason-registry")
-         local vue_language_server_path
-         local ok, vue_pkg = pcall(mason_registry.get_package, "vue-language-server")
-         if ok and vue_pkg then
-            local install_path = vue_pkg.get_install_path and vue_pkg:get_install_path() or nil
-            if install_path then
-               vue_language_server_path = install_path .. "/node_modules/@vue/language-server"
-            end
-         end
-         if vue_language_server_path then
-            vim.lsp.config("ts_ls", {
-               init_options = {
-                  plugins = {
-                     { name = "@vue/typescript-plugin", location = vue_language_server_path, languages = { "vue" } },
-                  },
-               },
-               on_attach = on_attach,
-               capabilities = capabilities,
-               filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
-            })
-            vim.lsp.enable("ts_ls")
-         end
+         -- Configure TypeScript/JavaScript separately from Vue to avoid overlap
+         vim.lsp.config("ts_ls", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
+         })
+         vim.lsp.enable("ts_ls")
 
          require("flutter-tools").setup({ lsp = { on_attach = on_attach, capabilities = capabilities } })
 
-         local servers = { "basedpyright", "taplo", "bashls", "vue_ls", "marksman" }
-         for _, name in ipairs(servers) do
+         -- Configure standard servers
+         for _, name in ipairs({ "basedpyright", "taplo", "bashls", "vue_ls" }) do
             vim.lsp.config(name, { on_attach = on_attach, capabilities = capabilities })
             vim.lsp.enable(name)
          end
+
+         -- Override marksman to avoid unknown filetype 'markdown.mdx'
+         vim.lsp.config("marksman", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            filetypes = { "markdown" },
+         })
+         vim.lsp.enable("marksman")
+
+         -- Reduce LSP log noise and file size
+         pcall(vim.lsp.set_log_level, "ERROR")
 
          -- Diagnostics enabled by default; uncomment to disable
          -- vim.lsp.handlers["textDocument/publishDiagnostics"] = function() end

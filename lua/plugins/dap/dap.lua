@@ -1,7 +1,10 @@
 return {
    {
       "mfussenegger/nvim-dap",
-      dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
+      -- Ensure nvim-nio is available before dap-ui to satisfy its requirement
+      dependencies = {
+         { "rcarriga/nvim-dap-ui", dependencies = { "nvim-neotest/nvim-nio" } },
+      },
       cmd = {
          "DapToggleBreakpoint",
          "DapTerminate",
