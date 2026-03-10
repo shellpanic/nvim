@@ -8,34 +8,33 @@ return {
          local wk = require("which-key")
          wk.setup(opts)
 
-         -- Group names and helpful labels under <leader>
-         wk.register({
-            ["<leader>"] = {
-               a = { name = "AI" },
-               s = { name = "Search" },
-               t = { name = "Terminal" },
-               u = { name = "Tests" },
-               l = { name = "LSP" },
-               d = { name = "Debug" },
-               c = { name = "Code" },
-               e = { name = "Editor" },
-               m = { name = "Misc" },
-               r = { "Reload file" },
-               x = { "Quit window" },
-               ["?"] = { "WhichKey (buffer)" },
-            },
-         }, { mode = "n" })
+         -- New which-key spec (array form)
+         wk.add({
+            { "<leader>?", desc = "WhichKey (buffer)" },
+            { "<leader>a", group = "AI" },
+            { "<leader>c", group = "Code" },
+            { "<leader>d", group = "Debug" },
+            { "<leader>e", group = "Editor" },
+            { "<leader>l", group = "LSP" },
+            { "<leader>m", group = "Misc" },
+            { "<leader>r", desc = "Reload file" },
+            { "<leader>s", group = "Search" },
+            { "<leader>t", group = "Terminal" },
+            { "<leader>u", group = "Tests" },
+            { "<leader>x", desc = "Quit window" },
+         })
 
-         -- Visual-mode group names where relevant
-         wk.register({
-            ["<leader>"] = {
-               a = { name = "AI" },
-               s = { name = "Search" },
-               c = { name = "Code" },
-               e = { name = "Editor" },
-               m = { name = "Misc" },
+         -- Visual mode groups using new spec
+         wk.add({
+            {
+               mode = { "v" },
+               { "<leader>a", group = "AI" },
+               { "<leader>c", group = "Code" },
+               { "<leader>e", group = "Editor" },
+               { "<leader>m", group = "Misc" },
+               { "<leader>s", group = "Search" },
             },
-         }, { mode = "v" })
+         })
          vim.api.nvim_create_user_command("WhichKeyBuffer", function()
             wk.show({ global = false })
          end, {})
