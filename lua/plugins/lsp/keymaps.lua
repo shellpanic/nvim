@@ -1,7 +1,7 @@
 -- LSP domain keymaps
 -- no return; this module is for side-effect keymaps only
 
--- Toggle LSP signature help window
+-- Toggle LSP signature help window (keep as <leader>ls)
 vim.keymap.set("n", "<Leader>ls", function()
    local ok, lsp_signature = pcall(require, "lsp_signature")
    if ok then
