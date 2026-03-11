@@ -273,6 +273,21 @@ cleanup_node_debian_conflicts_ubuntu() {
   fi
 }
 
+ensure_python_runtime_ubuntu() {
+  # Ensure Python runtime suitable for Mason-managed tools (venv + build headers)
+  local py=(python3 python3-venv python3-pip python3-dev)
+  for p in "${py[@]}"; do ensure_pkg_apt "$p"; done
+
+  # Quick sanity checks
+  if ! python3 -c 'import sys; print(sys.version)' >/dev/null 2>&1; then
+    warn "python3 not working as expected"
+  fi
+  if ! python3 -m venv --help >/dev/null 2>&1; then
+    warn "python3-venv not functioning; re-installing"
+    sudo apt-get install -y --reinstall python3-venv || true
+  fi
+}
+
 ensure_node_via_nvm() {
   # Install Node via nvm (works across architectures including armhf/arm64)
   local NVM_VERSION="v0.39.7"
@@ -380,10 +395,11 @@ install_ubuntu_2204() {
   for p in "${core[@]}"; do ensure_pkg_apt "$p"; done
   ensure_fd_symlink_ubuntu || true
 
-  # Languages and build toolchains (install modern Node via NodeSource below)
-  local langs=(build-essential make python3 python3-pip golang-go rustc cargo luarocks)
+  # Build tools and language runtimes (Python handled via helper for venv/dev)
+  local langs=(build-essential make golang-go rustc cargo luarocks)
   for p in "${langs[@]}"; do ensure_pkg_apt "$p"; done
 
+  ensure_python_runtime_ubuntu || true
   ensure_node_modern_ubuntu || true
 
   # Optional extras
