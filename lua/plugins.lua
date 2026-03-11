@@ -13,6 +13,7 @@ return require("lazy").setup({
    require("plugins.editor.comment"),
    require("plugins.editor.autopairs"),
    require("plugins.editor.telescope"),
+   require("plugins.editor.aerial"),
    require("plugins.editor.neo-clip"),
    require("plugins.editor.toggleterm"),
    require("plugins.editor.treesitter"),
