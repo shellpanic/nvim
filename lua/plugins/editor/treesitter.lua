@@ -1,6 +1,7 @@
 return {
    {
       "nvim-treesitter/nvim-treesitter",
+      event = "VeryLazy",
       build = ":TSUpdate",
       config = function()
          require("nvim-treesitter.configs").setup({
@@ -32,5 +33,9 @@ return {
          vim.treesitter.language.register("bash", "zsh")
       end,
    },
-   "nvim-treesitter/nvim-treesitter-textobjects",
+   {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      event = "VeryLazy",
+      dependencies = { "nvim-treesitter/nvim-treesitter" },
+   },
 }
