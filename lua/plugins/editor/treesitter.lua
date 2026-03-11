@@ -3,7 +3,6 @@ return {
       "nvim-treesitter/nvim-treesitter",
       event = "VeryLazy",
       build = ":TSUpdate",
-      main = "nvim-treesitter.configs",
       opts = {
          ensure_installed = {
             "bash",
@@ -26,6 +25,16 @@ return {
          highlight = { enable = true, disable = {}, additional_vim_regex_highlighting = false },
          modules = {},
       },
+      config = function(_, opts)
+         local ok, configs = pcall(require, "nvim-treesitter.configs")
+         if not ok then
+            vim.schedule(function()
+               vim.notify("nvim-treesitter not available yet; run :Lazy sync and restart", vim.log.levels.WARN)
+            end)
+            return
+         end
+         configs.setup(opts)
+      end,
       init = function()
          -- Folding powered by Treesitter
          vim.opt.foldenable = false
