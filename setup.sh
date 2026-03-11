@@ -310,23 +310,60 @@ bootstrap_neovim_plugins() {
   if ! is_cmd nvim; then return 0; fi
   local cfgdir
   cfgdir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
-  if [ ! -f "$cfgdir/init.lua" ]; then
-    warn "Neovim config not found at $cfgdir; skipping plugin bootstrap"
+  if [ ! -f "$cfgdir/lua/plugins.lua" ]; then
+    warn "plugins.lua not found under $cfgdir/lua; skipping plugin bootstrap"
     return 0
   fi
-  note "Bootstrapping Neovim plugins (add treesitter to rtp early)"
-  local data_dir lazy_dir rtp_cmds
-  data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/nvim"
-  lazy_dir="$data_dir/lazy"
-  rtp_cmds=(
-    --cmd "set rtp^=$lazy_dir/nvim-treesitter"
-    --cmd "set rtp^=$lazy_dir/nvim-treesitter-textobjects"
-  )
+  note "Bootstrapping Neovim plugins (minimal init to avoid early config)"
 
-  # First pass: sync plugins; pre-added rtp ensures treesitter module exists for config
-  nvim --headless "${rtp_cmds[@]}" -u "$cfgdir/init.lua" +"Lazy! sync" +qa || true
-  # Second pass: update parsers with the command now available
-  nvim --headless "${rtp_cmds[@]}" -u "$cfgdir/init.lua" +"TSUpdateSync" +qa || true
+  # Extract plugin module list from lua/plugins.lua
+  local plugin_modules
+  plugin_modules=$(sed -n 's/.*require("\(plugins\.[^"]*\)").*/\1/p' "$cfgdir/lua/plugins.lua" | tr '\n' ' ')
+
+  # Build a temporary minimal init that only installs plugins without loading user configs
+  local tmp_init
+  tmp_init=$(mktemp)
+  cat >"$tmp_init" <<'LUA'
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  vim.fn.system({"git","clone","--filter=blob:none","https://github.com/folke/lazy.nvim.git","--branch=stable",lazypath})
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Build spec list from modules emitted by the shell
+local modules = {
+LUA
+  for m in $plugin_modules; do
+    echo "  \"$m\"," >>"$tmp_init"
+  done
+  cat >>"$tmp_init" <<'LUA'
+}
+local spec = {}
+for _, m in ipairs(modules) do
+  local ok, mod = pcall(require, m)
+  if ok then
+    if type(mod) == "table" and (#mod > 0 or mod[1] ~= nil) then
+      for _, it in ipairs(mod) do table.insert(spec, it) end
+    else
+      table.insert(spec, mod)
+    end
+  end
+end
+
+require("lazy").setup(spec, {
+  defaults = { lazy = true },
+  change_detection = { enabled = false },
+})
+LUA
+
+  # First pass: install/sync
+  nvim --headless -u "$tmp_init" +"lua require('lazy').sync()" +qa || true
+  # Second pass: load treesitter and update parsers
+  nvim --headless -u "$tmp_init" \
+    +"lua require('lazy').load({plugins={'nvim-treesitter'}, wait=true})" \
+    +"TSUpdateSync" +qa || true
+
+  rm -f "$tmp_init"
 }
 
 # Pre-clone critical plugins to avoid first-start require errors
