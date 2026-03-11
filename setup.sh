@@ -65,7 +65,7 @@ install_void() {
   sudo xbps-install -Sy
 
   # Core CLI tools
-  local core=(git ripgrep fd xclip)
+  local core=(git ripgrep fd xclip wl-clipboard)
   # Languages and build toolchains
   local langs=(gcc make nodejs python3 python3-pip go rust luarocks)
   # Optional extras
@@ -390,8 +390,8 @@ install_ubuntu_2204() {
 
   ensure_neovim_ubuntu
 
-  # Core tools
-  local core=(git ripgrep fd-find xclip curl unzip)
+  # Core tools (include both X11 and Wayland clipboard helpers)
+  local core=(git ripgrep fd-find xclip wl-clipboard curl unzip)
   for p in "${core[@]}"; do ensure_pkg_apt "$p"; done
   ensure_fd_symlink_ubuntu || true
 
@@ -411,6 +411,7 @@ install_ubuntu_2204() {
   fi
 
   ensure_tree_sitter_cli_ubuntu || true
+  ensure_selene_on_arm || true
   if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
   # Pre-fetch plugins and parsers so first start is smooth
@@ -455,6 +456,33 @@ bootstrap_neovim_plugins() {
 
 # Pre-clone critical plugins to avoid first-start require errors
 preseed_critical_plugins() { :; }
+
+# Attempt to provide selene on ARM via cargo when Mason lacks binaries
+ensure_selene_on_arm() {
+  local arch
+  arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
+  case "${arch}" in
+    arm64|aarch64|armhf|armv7l)
+      if is_cmd selene; then
+        same "selene already available"
+        return 0
+      fi
+      if is_cmd cargo; then
+        note "Installing selene via cargo on ${arch} (Mason binary may be unsupported)"
+        cargo install selene --locked || true
+        if [ -x "$HOME/.cargo/bin/selene" ]; then
+          sudo ln -sf "$HOME/.cargo/bin/selene" /usr/local/bin/selene || true
+          is_cmd selene && ok "selene available via cargo"
+        fi
+      else
+        same "cargo not found; skipping selene cargo install"
+      fi
+      ;;
+    *)
+      :
+      ;;
+  esac
+}
 
 # ------------------------------
 # Entrypoint
