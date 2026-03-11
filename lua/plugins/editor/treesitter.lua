@@ -24,7 +24,7 @@ return {
             ignore_install = {},
             highlight = { enable = true, disable = {}, additional_vim_regex_highlighting = false },
             modules = {},
-         })
+          })
          -- Folding powered by Treesitter
          vim.opt.foldenable = false
          vim.opt.foldmethod = "expr"

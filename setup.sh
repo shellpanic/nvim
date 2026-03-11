@@ -90,6 +90,9 @@ install_void() {
   ensure_tree_sitter_cli_void || true
   if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
+  # Pre-fetch plugins and parsers so first start is smooth
+  bootstrap_neovim_plugins || true
+
   ok "Void setup complete"
 }
 
@@ -273,6 +276,9 @@ install_ubuntu_2204() {
   ensure_tree_sitter_cli_ubuntu || true
   if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
+  # Pre-fetch plugins and parsers so first start is smooth
+  bootstrap_neovim_plugins || true
+
   ok "Ubuntu 22.04 setup complete"
 }
 
@@ -282,7 +288,7 @@ install_ubuntu_2204() {
 ensure_julia_via_juliaup() {
   if is_cmd julia; then same "julia already available"; return 0; fi
   if ! is_cmd juliaup; then
-    warn "juliaup not found; install 'julia' or 'juliaup' if needed (optional)"
+    same "Skipping Julia setup (juliaup not found; optional)"
     return 0
   fi
   note "Installing Julia 'release' channel via juliaup"
@@ -295,6 +301,20 @@ ensure_julia_via_juliaup() {
     sudo ln -sf "$shim" /usr/local/bin/julia || true
   fi
   is_cmd julia && ok "julia available via juliaup" || warn "julia not on PATH; add \"$HOME/.juliaup/bin\" or link the shim"
+}
+
+# Bootstrap plugins so first interactive start is smooth
+bootstrap_neovim_plugins() {
+  if ! is_cmd nvim; then return 0; fi
+  local cfgdir
+  cfgdir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+  if [ ! -f "$cfgdir/init.lua" ]; then
+    warn "Neovim config not found at $cfgdir; skipping plugin bootstrap"
+    return 0
+  fi
+  note "Bootstrapping Neovim plugins (lazy sync + treesitter parsers)"
+  nvim --headless -u "$cfgdir/init.lua" +"Lazy! sync" +qa || true
+  nvim --headless -u "$cfgdir/init.lua" +"TSUpdateSync" +qa || true
 }
 
 # ------------------------------
