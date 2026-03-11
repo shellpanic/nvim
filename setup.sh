@@ -102,6 +102,16 @@ ensure_tree_sitter_cli_void() {
   if ensure_pkg_xbps tree-sitter 2>/dev/null; then
     is_cmd tree-sitter && { ok "tree-sitter CLI installed (tree-sitter)"; return 0; }
   fi
+  # Try cargo fallback (usually most reliable)
+  if is_cmd cargo; then
+    note "Installing tree-sitter-cli via cargo"
+    cargo install tree-sitter-cli --locked || true
+    if [ -x "$HOME/.cargo/bin/tree-sitter" ]; then
+      note "Linking $HOME/.cargo/bin/tree-sitter to /usr/local/bin/tree-sitter"
+      sudo ln -sf "$HOME/.cargo/bin/tree-sitter" /usr/local/bin/tree-sitter || true
+    fi
+    is_cmd tree-sitter && { ok "tree-sitter CLI available (cargo)"; return 0; }
+  fi
   note "Falling back to npm global install for tree-sitter-cli"
   if is_cmd npm; then
     sudo npm -g install tree-sitter-cli || true
@@ -151,6 +161,18 @@ ensure_tree_sitter_cli_ubuntu() {
   is_cmd tree-sitter && { ok "tree-sitter CLI installed via apt"; return 0; }
   sudo apt-get install -y tree-sitter || true
   is_cmd tree-sitter && { ok "tree-sitter CLI available (tree-sitter)"; return 0; }
+  # Prefer cargo fallback to avoid node version issues on 22.04
+  if is_cmd cargo; then
+    note "Installing tree-sitter-cli via cargo"
+    cargo install tree-sitter-cli --locked || true
+    if [ -x "$HOME/.cargo/bin/tree-sitter" ]; then
+      note "Linking $HOME/.cargo/bin/tree-sitter to /usr/local/bin/tree-sitter"
+      sudo ln -sf "$HOME/.cargo/bin/tree-sitter" /usr/local/bin/tree-sitter || true
+    fi
+    is_cmd tree-sitter && { ok "tree-sitter CLI available (cargo)"; return 0; }
+  else
+    warn "cargo not found; install Rust toolchain to build tree-sitter-cli"
+  fi
   note "Falling back to npm global install for tree-sitter-cli"
   if is_cmd npm; then
     sudo npm -g install tree-sitter-cli || true
