@@ -103,6 +103,11 @@ ensure_tree_sitter_cli_void() {
     is_cmd tree-sitter && { ok "tree-sitter CLI installed (tree-sitter)"; return 0; }
   fi
   # Try cargo fallback (usually most reliable)
+  # Ensure C toolchain and clang headers are present (best-effort)
+  ensure_pkg_xbps gcc || true
+  ensure_pkg_xbps make || true
+  ensure_pkg_xbps clang || true
+  ensure_pkg_xbps libclang-devel || true
   if is_cmd cargo; then
     note "Installing tree-sitter-cli via cargo"
     cargo install tree-sitter-cli --locked || true
@@ -112,17 +117,25 @@ ensure_tree_sitter_cli_void() {
     fi
     is_cmd tree-sitter && { ok "tree-sitter CLI available (cargo)"; return 0; }
   fi
-  note "Falling back to npm global install for tree-sitter-cli"
-  if is_cmd npm; then
-    sudo npm -g install tree-sitter-cli || true
-    local npm_bin
-    npm_bin=$(npm bin -g 2>/dev/null || true)
-    if [ -n "${npm_bin:-}" ] && [ -x "$npm_bin/tree-sitter" ]; then
-      note "Linking $npm_bin/tree-sitter to /usr/local/bin/tree-sitter"
-      sudo ln -sf "$npm_bin/tree-sitter" /usr/local/bin/tree-sitter || true
+  # NPM fallback only if Node >= 16 to avoid syntax errors in installer
+  note "Considering npm fallback for tree-sitter-cli"
+  if is_cmd node && is_cmd npm; then
+    local node_major
+    node_major=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)
+    if [ "$node_major" -ge 16 ]; then
+      note "Installing tree-sitter-cli via npm -g"
+      sudo npm -g install tree-sitter-cli || true
+      local npm_bin
+      npm_bin=$(npm bin -g 2>/dev/null || true)
+      if [ -n "${npm_bin:-}" ] && [ -x "$npm_bin/tree-sitter" ]; then
+        note "Linking $npm_bin/tree-sitter to /usr/local/bin/tree-sitter"
+        sudo ln -sf "$npm_bin/tree-sitter" /usr/local/bin/tree-sitter || true
+      fi
+    else
+      warn "Node version <16 detected; skipping npm fallback for tree-sitter-cli"
     fi
   else
-    warn "npm not found; install nodejs/npm to get tree-sitter-cli via npm"
+    warn "node/npm not found; skipping npm fallback"
   fi
   is_cmd tree-sitter && { ok "tree-sitter CLI available"; return 0; }
   warn "Could not ensure tree-sitter CLI; consider adding npm global bin to PATH or installing from repos"
@@ -162,6 +175,12 @@ ensure_tree_sitter_cli_ubuntu() {
   sudo apt-get install -y tree-sitter || true
   is_cmd tree-sitter && { ok "tree-sitter CLI available (tree-sitter)"; return 0; }
   # Prefer cargo fallback to avoid node version issues on 22.04
+  # Ensure toolchain and clang headers for bindgen
+  ensure_pkg_apt build-essential || true
+  ensure_pkg_apt clang || true
+  ensure_pkg_apt libclang-dev || true
+  ensure_pkg_apt pkg-config || true
+  ensure_pkg_apt llvm || true
   if is_cmd cargo; then
     note "Installing tree-sitter-cli via cargo"
     cargo install tree-sitter-cli --locked || true
@@ -173,9 +192,16 @@ ensure_tree_sitter_cli_ubuntu() {
   else
     warn "cargo not found; install Rust toolchain to build tree-sitter-cli"
   fi
-  note "Falling back to npm global install for tree-sitter-cli"
-  if is_cmd npm; then
-    sudo npm -g install tree-sitter-cli || true
+  note "Considering npm fallback for tree-sitter-cli"
+  if is_cmd node && is_cmd npm; then
+    local node_major
+    node_major=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)
+    if [ "$node_major" -ge 16 ]; then
+      note "Installing tree-sitter-cli via npm -g"
+      sudo npm -g install tree-sitter-cli || true
+    else
+      warn "Node version <16 detected; skipping npm fallback for tree-sitter-cli"
+    fi
     local npm_bin
     npm_bin=$(npm bin -g 2>/dev/null || true)
     if [ -n "${npm_bin:-}" ] && [ -x "$npm_bin/tree-sitter" ]; then
@@ -183,7 +209,7 @@ ensure_tree_sitter_cli_ubuntu() {
       sudo ln -sf "$npm_bin/tree-sitter" /usr/local/bin/tree-sitter || true
     fi
   else
-    warn "npm not found; install nodejs and npm to get tree-sitter-cli via npm"
+    warn "node/npm not found; skipping npm fallback"
   fi
   is_cmd tree-sitter && { ok "tree-sitter CLI available"; return 0; }
   warn "Could not ensure tree-sitter CLI"
