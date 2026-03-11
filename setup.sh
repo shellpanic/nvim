@@ -391,7 +391,8 @@ install_ubuntu_2204() {
   ensure_neovim_ubuntu
 
   # Core tools (include both X11 and Wayland clipboard helpers)
-  local core=(git ripgrep fd-find xclip wl-clipboard curl unzip)
+  # Include xsel as an additional clipboard provider fallback and xauth for X11 forwarding.
+  local core=(git ripgrep fd-find xclip wl-clipboard xsel xauth curl unzip)
   for p in "${core[@]}"; do ensure_pkg_apt "$p"; done
   ensure_fd_symlink_ubuntu || true
 
@@ -412,6 +413,7 @@ install_ubuntu_2204() {
 
   ensure_tree_sitter_cli_ubuntu || true
   ensure_selene_on_arm || true
+  ensure_dcm_on_arm || true
   if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
   # Pre-fetch plugins and parsers so first start is smooth
@@ -476,6 +478,48 @@ ensure_selene_on_arm() {
         fi
       else
         same "cargo not found; skipping selene cargo install"
+      fi
+      ;;
+    *)
+      :
+      ;;
+  esac
+}
+
+# Attempt to provide Dart Code Metrics (dcm) on ARM when Mason lacks binaries
+ensure_dcm_on_arm() {
+  local arch
+  arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
+  case "${arch}" in
+    arm64|aarch64|armhf|armv7l)
+      if is_cmd dcm; then
+        same "dcm already available"
+        return 0
+      fi
+
+      # Prefer Dart SDK if available, otherwise use Flutter's embedded Dart
+      if is_cmd dart; then
+        note "Installing dart_code_metrics (dcm) via Dart pub on ${arch}"
+        dart pub global activate dart_code_metrics || true
+      elif is_cmd flutter; then
+        note "Installing dart_code_metrics (dcm) via Flutter pub on ${arch}"
+        flutter pub global activate dart_code_metrics || true
+      else
+        warn "Neither Dart nor Flutter found; cannot install dcm automatically on ${arch}"
+        warn "Install Dart SDK or Flutter, then run: 'dart pub global activate dart_code_metrics'"
+        return 0
+      fi
+
+      # Link global pub bin into system PATH for shells without pub-cache in PATH
+      local pubbin
+      pubbin="$HOME/.pub-cache/bin/dcm"
+      if [ -x "$pubbin" ]; then
+        sudo ln -sf "$pubbin" /usr/local/bin/dcm || true
+      fi
+      if is_cmd dcm; then
+        ok "dcm available via Dart/Flutter pub"
+      else
+        warn "dcm not found on PATH after activation; ensure '$HOME/.pub-cache/bin' is in PATH or rerun later"
       fi
       ;;
     *)
