@@ -40,7 +40,12 @@ Mason installs binaries into Neovim’s data directory; no system-wide installat
 ## Quick install hints
 
 Ubuntu/Debian
-- Core tooling: `sudo apt update && sudo apt install -y git build-essential ripgrep fd-find python3 python3-venv nodejs npm docker.io make gcc`
+- One-shot (Ubuntu 22.04): run `./setup.sh` (installs Neovim 0.11.x, modern Node 20.x + npm, rg/fd, etc.)
+- Core tooling (manual): `sudo apt update && sudo apt install -y git build-essential ripgrep fd-find python3 python3-venv docker.io make gcc`
+- Node.js: prefer 18+ (20 LTS recommended). On Ubuntu, install via NodeSource:
+  - `sudo apt install -y ca-certificates curl gnupg`
+  - `curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -`
+  - `sudo apt-get install -y nodejs`
 - Optional TUI tools: `sudo apt install -y lazygit` (lazydocker: install per upstream)
 - Deno (for Peek): `sudo snap install deno --classic` or use the official script: `curl -fsSL https://deno.land/x/install/install.sh | sh`
 - Rust toolchain: `curl https://sh.rustup.rs -sSf | sh`

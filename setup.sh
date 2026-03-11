@@ -250,6 +250,82 @@ ensure_fd_symlink_ubuntu() {
   fi
 }
 
+ensure_node_via_nvm() {
+  # Install Node via nvm (works across architectures including armhf/arm64)
+  local NVM_VERSION="v0.39.7"
+  export NVM_DIR="$HOME/.nvm"
+  if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+    note "Installing nvm $NVM_VERSION"
+    # Use || true so set -e doesn't exit on transient network errors; we'll verify below
+    curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash || true
+  else
+    same "nvm already installed"
+  fi
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    # shellcheck disable=SC1090
+    . "$NVM_DIR/nvm.sh"
+    note "Installing latest LTS Node via nvm"
+    nvm install --lts || true
+    nvm use --lts || true
+    local node_bin npm_bin
+    node_bin="$(command -v node || true)"
+    npm_bin="$(command -v npm || true)"
+    if [ -n "${node_bin:-}" ] && [ -n "${npm_bin:-}" ]; then
+      note "Linking Node/npm to /usr/local/bin"
+      sudo ln -sf "$node_bin" /usr/local/bin/node || true
+      sudo ln -sf "$npm_bin" /usr/local/bin/npm || true
+      is_cmd node && is_cmd npm && { ok "Node $(node -v) and npm available (nvm)"; return 0; }
+    fi
+  fi
+  warn "nvm installation did not complete or Node not available; check network and rerun"
+  return 1
+}
+
+ensure_node_modern_ubuntu() {
+  # Ensure Node.js >= 18 with npm. Try NodeSource on amd64/arm64; fallback to nvm (robust on ARM).
+  local need_install=true
+  if is_cmd node; then
+    local maj
+    maj=$(node -v 2>/dev/null | sed -E 's/^v([0-9]+).*/\1/') || maj=0
+    if [ "${maj:-0}" -ge 18 ] && is_cmd npm; then
+      same "Node $(node -v) with npm already installed"
+      need_install=false
+    fi
+  fi
+  $need_install || return 0
+
+  local arch
+  arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
+  case "${arch}" in
+    amd64|x86_64|arm64|aarch64)
+      note "Installing Node.js 20.x LTS via NodeSource for ${arch}"
+      sudo apt-get install -y ca-certificates curl gnupg || true
+      curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - || true
+      sudo apt-get install -y nodejs || true
+      ;;
+    *)
+      same "Skipping NodeSource on ${arch}; using nvm fallback"
+      ;;
+  esac
+
+  # Verify; if still missing/old, fallback to nvm
+  local okver=false
+  if is_cmd node && is_cmd npm; then
+    local maj
+    maj=$(node -v 2>/dev/null | sed -E 's/^v([0-9]+).*/\1/') || maj=0
+    if [ "${maj:-0}" -ge 18 ]; then
+      okver=true
+    fi
+  fi
+
+  if ! $okver; then
+    warn "NodeSource path not available or Node < 18; falling back to nvm"
+    ensure_node_via_nvm || true
+  else
+    ok "Node $(node -v) and npm installed (NodeSource)"
+  fi
+}
+
 install_ubuntu_2204() {
   note "Updating apt indexes"
   sudo apt-get update -y
@@ -261,9 +337,11 @@ install_ubuntu_2204() {
   for p in "${core[@]}"; do ensure_pkg_apt "$p"; done
   ensure_fd_symlink_ubuntu || true
 
-  # Languages and build toolchains
-  local langs=(build-essential make nodejs npm python3 python3-pip golang-go rustc cargo luarocks)
+  # Languages and build toolchains (install modern Node via NodeSource below)
+  local langs=(build-essential make python3 python3-pip golang-go rustc cargo luarocks)
   for p in "${langs[@]}"; do ensure_pkg_apt "$p"; done
+
+  ensure_node_modern_ubuntu || true
 
   # Optional extras
   local optional=(php composer)
