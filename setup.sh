@@ -250,10 +250,34 @@ ensure_fd_symlink_ubuntu() {
   fi
 }
 
+cleanup_node_debian_conflicts_ubuntu() {
+  # Remove Debian/Ubuntu Node packages that conflict with NodeSource nodejs
+  local to_purge=()
+  if dpkg -s libnode-dev >/dev/null 2>&1; then to_purge+=(libnode-dev); fi
+  if dpkg -s nodejs-doc  >/dev/null 2>&1; then to_purge+=(nodejs-doc); fi
+  if dpkg -s npm        >/dev/null 2>&1; then to_purge+=(npm); fi
+  if dpkg -s nodejs     >/dev/null 2>&1; then
+    # Purge old repo nodejs (commonly 10/12/14/16 on jammy), NodeSource will provide 20.x
+    local cur
+    cur=$(dpkg -s nodejs | awk '/^Version:/{print $2}')
+    if printf '%s' "$cur" | grep -Eq '^(0|10|12|14|16)\.|12\.22\.'; then
+      to_purge+=(nodejs)
+    fi
+  fi
+  if [ ${#to_purge[@]} -gt 0 ]; then
+    note "Removing conflicting Node packages: ${to_purge[*]}"
+    sudo apt-get remove -y --purge "${to_purge[@]}" || true
+    sudo apt-get autoremove -y || true
+  else
+    same "No conflicting Debian Node packages detected"
+  fi
+}
+
 ensure_node_via_nvm() {
   # Install Node via nvm (works across architectures including armhf/arm64)
   local NVM_VERSION="v0.39.7"
-  export NVM_DIR="$HOME/.nvm"
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  mkdir -p "$NVM_DIR"
   if [ ! -s "$NVM_DIR/nvm.sh" ]; then
     note "Installing nvm $NVM_VERSION"
     # Use || true so set -e doesn't exit on transient network errors; we'll verify below
@@ -301,7 +325,12 @@ ensure_node_modern_ubuntu() {
       note "Installing Node.js 20.x LTS via NodeSource for ${arch}"
       sudo apt-get install -y ca-certificates curl gnupg || true
       curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - || true
-      sudo apt-get install -y nodejs || true
+      cleanup_node_debian_conflicts_ubuntu || true
+      # Try install, forcing overwrite only as a last resort
+      if ! sudo apt-get install -y nodejs; then
+        warn "nodejs install hit file conflicts; retrying with --force-overwrite"
+        sudo apt-get install -y -o Dpkg::Options::=--force-overwrite nodejs || true
+      fi
       ;;
     *)
       same "Skipping NodeSource on ${arch}; using nvm fallback"
