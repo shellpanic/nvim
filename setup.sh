@@ -331,6 +331,9 @@ ensure_node_modern_ubuntu() {
         warn "nodejs install hit file conflicts; retrying with --force-overwrite"
         sudo apt-get install -y -o Dpkg::Options::=--force-overwrite nodejs || true
       fi
+      # Ensure visibility in both common PATH locations
+      if [ -x /usr/bin/node ]; then sudo ln -sf /usr/bin/node /usr/local/bin/node || true; fi
+      if [ -x /usr/bin/npm  ]; then sudo ln -sf /usr/bin/npm  /usr/local/bin/npm  || true; fi
       ;;
     *)
       same "Skipping NodeSource on ${arch}; using nvm fallback"
@@ -352,6 +355,17 @@ ensure_node_modern_ubuntu() {
     ensure_node_via_nvm || true
   else
     ok "Node $(node -v) and npm installed (NodeSource)"
+  fi
+
+  # Final visibility check: both shell and non-login environments often include /usr/local/bin and /usr/bin
+  if ! is_cmd npm; then
+    warn "npm still not visible in PATH; creating additional shim if possible"
+    if [ -x /usr/local/bin/npm ]; then sudo ln -sf /usr/local/bin/npm /usr/bin/npm || true; fi
+  fi
+  if ! is_cmd npm; then
+    warn "npm is not on PATH for this shell; you may need to open a new terminal/session. Current PATH: $PATH"
+  else
+    ok "npm available at $(command -v npm)"
   fi
 }
 
