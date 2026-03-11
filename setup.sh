@@ -88,6 +88,7 @@ install_void() {
   fi
 
   ensure_tree_sitter_cli_void || true
+  preseed_critical_plugins || true
   if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
   # Pre-fetch plugins and parsers so first start is smooth
@@ -274,6 +275,7 @@ install_ubuntu_2204() {
   fi
 
   ensure_tree_sitter_cli_ubuntu || true
+  preseed_critical_plugins || true
   if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
   # Pre-fetch plugins and parsers so first start is smooth
@@ -314,7 +316,27 @@ bootstrap_neovim_plugins() {
   fi
   note "Bootstrapping Neovim plugins (lazy sync + treesitter parsers)"
   nvim --headless -u "$cfgdir/init.lua" +"Lazy! sync" +qa || true
-  nvim --headless -u "$cfgdir/init.lua" +"TSUpdateSync" +qa || true
+  # Ensure the treesitter plugin is loaded before running its command
+  nvim --headless -u "$cfgdir/init.lua" \
+    +"lua require('lazy').load({plugins={'nvim-treesitter'}, wait=true})" \
+    +"TSUpdateSync" +qa || true
+}
+
+# Pre-clone critical plugins to avoid first-start require errors
+preseed_critical_plugins() {
+  local data_dir
+  data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/nvim"
+  local lazy_dir="$data_dir/lazy"
+  mkdir -p "$lazy_dir"
+
+  if [ ! -d "$lazy_dir/nvim-treesitter" ]; then
+    note "Preseeding plugin: nvim-treesitter"
+    git clone --depth=1 https://github.com/nvim-treesitter/nvim-treesitter "$lazy_dir/nvim-treesitter" || true
+  fi
+  if [ ! -d "$lazy_dir/nvim-treesitter-textobjects" ]; then
+    note "Preseeding plugin: nvim-treesitter-textobjects"
+    git clone --depth=1 https://github.com/nvim-treesitter/nvim-treesitter-textobjects "$lazy_dir/nvim-treesitter-textobjects" || true
+  fi
 }
 
 # ------------------------------
