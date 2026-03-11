@@ -117,26 +117,7 @@ ensure_tree_sitter_cli_void() {
     fi
     is_cmd tree-sitter && { ok "tree-sitter CLI available (cargo)"; return 0; }
   fi
-  # NPM fallback only if Node >= 16 to avoid syntax errors in installer
-  note "Considering npm fallback for tree-sitter-cli"
-  if is_cmd node && is_cmd npm; then
-    local node_major
-    node_major=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)
-    if [ "$node_major" -ge 16 ]; then
-      note "Installing tree-sitter-cli via npm -g"
-      sudo npm -g install tree-sitter-cli || true
-      local npm_bin
-      npm_bin=$(npm bin -g 2>/dev/null || true)
-      if [ -n "${npm_bin:-}" ] && [ -x "$npm_bin/tree-sitter" ]; then
-        note "Linking $npm_bin/tree-sitter to /usr/local/bin/tree-sitter"
-        sudo ln -sf "$npm_bin/tree-sitter" /usr/local/bin/tree-sitter || true
-      fi
-    else
-      warn "Node version <16 detected; skipping npm fallback for tree-sitter-cli"
-    fi
-  else
-    warn "node/npm not found; skipping npm fallback"
-  fi
+  # No npm fallback to avoid node version/installer issues
   is_cmd tree-sitter && { ok "tree-sitter CLI available"; return 0; }
   warn "Could not ensure tree-sitter CLI; consider adding npm global bin to PATH or installing from repos"
   return 1
@@ -156,15 +137,40 @@ ensure_pkg_apt() {
 }
 
 ensure_neovim_ubuntu() {
-  if is_cmd nvim; then same "Neovim already installed"; return 0; fi
-  # Prefer upstream stable PPA for a newer Neovim on 22.04
+  # If Neovim exists, only accept 0.11.x; otherwise, ask user to uninstall
+  if is_cmd nvim; then
+    local ver
+    ver=$(nvim --version | head -n1 | sed -E 's/^NVIM v?//' | awk '{print $1}')
+    case "${ver:-}" in
+      0.11.*)
+        same "Neovim ${ver} (0.11.x) already installed"
+        return 0
+        ;;
+      *)
+        warn "Detected Neovim ${ver}; please uninstall if you want 0.11.x installed by this script"
+        return 0
+        ;;
+    esac
+  fi
+
+  # Prefer upstream stable PPA for 0.11.x on 22.04
   if ! is_cmd add-apt-repository; then
     sudo apt-get install -y software-properties-common
   fi
   note "Adding Neovim stable PPA (neovim-ppa/stable)"
   sudo add-apt-repository -y ppa:neovim-ppa/stable || true
   sudo apt-get update -y
-  sudo apt-get install -y neovim
+
+  # Attempt to locate the newest 0.11.x version and install that specifically
+  local target
+  target=$(apt-cache madison neovim 2>/dev/null | awk '{print $3}' | grep -E '^0\.11\.' | sort -Vr | head -n1 || true)
+  if [ -n "${target:-}" ]; then
+    note "Installing neovim=${target} (0.11.x)"
+    sudo apt-get install -y "neovim=${target}"
+  else
+    warn "Could not find Neovim 0.11.x in APT sources; please add a repository that provides it or install manually."
+    return 1
+  fi
 }
 
 ensure_tree_sitter_cli_ubuntu() {
@@ -192,25 +198,7 @@ ensure_tree_sitter_cli_ubuntu() {
   else
     warn "cargo not found; install Rust toolchain to build tree-sitter-cli"
   fi
-  note "Considering npm fallback for tree-sitter-cli"
-  if is_cmd node && is_cmd npm; then
-    local node_major
-    node_major=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)
-    if [ "$node_major" -ge 16 ]; then
-      note "Installing tree-sitter-cli via npm -g"
-      sudo npm -g install tree-sitter-cli || true
-    else
-      warn "Node version <16 detected; skipping npm fallback for tree-sitter-cli"
-    fi
-    local npm_bin
-    npm_bin=$(npm bin -g 2>/dev/null || true)
-    if [ -n "${npm_bin:-}" ] && [ -x "$npm_bin/tree-sitter" ]; then
-      note "Linking $npm_bin/tree-sitter to /usr/local/bin/tree-sitter"
-      sudo ln -sf "$npm_bin/tree-sitter" /usr/local/bin/tree-sitter || true
-    fi
-  else
-    warn "node/npm not found; skipping npm fallback"
-  fi
+  # No npm fallback to avoid node version/installer issues
   is_cmd tree-sitter && { ok "tree-sitter CLI available"; return 0; }
   warn "Could not ensure tree-sitter CLI"
   return 1
