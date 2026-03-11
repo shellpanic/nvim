@@ -314,12 +314,19 @@ bootstrap_neovim_plugins() {
     warn "Neovim config not found at $cfgdir; skipping plugin bootstrap"
     return 0
   fi
-  note "Bootstrapping Neovim plugins (lazy sync + treesitter parsers)"
-  nvim --headless -u "$cfgdir/init.lua" +"Lazy! sync" +qa || true
-  # Ensure the treesitter plugin is loaded before running its command
-  nvim --headless -u "$cfgdir/init.lua" \
-    +"lua require('lazy').load({plugins={'nvim-treesitter'}, wait=true})" \
-    +"TSUpdateSync" +qa || true
+  note "Bootstrapping Neovim plugins (add treesitter to rtp early)"
+  local data_dir lazy_dir rtp_cmds
+  data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/nvim"
+  lazy_dir="$data_dir/lazy"
+  rtp_cmds=(
+    --cmd "set rtp^=$lazy_dir/nvim-treesitter"
+    --cmd "set rtp^=$lazy_dir/nvim-treesitter-textobjects"
+  )
+
+  # First pass: sync plugins; pre-added rtp ensures treesitter module exists for config
+  nvim --headless "${rtp_cmds[@]}" -u "$cfgdir/init.lua" +"Lazy! sync" +qa || true
+  # Second pass: update parsers with the command now available
+  nvim --headless "${rtp_cmds[@]}" -u "$cfgdir/init.lua" +"TSUpdateSync" +qa || true
 }
 
 # Pre-clone critical plugins to avoid first-start require errors
