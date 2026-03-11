@@ -136,6 +136,40 @@ ensure_pkg_apt() {
   fi
 }
 
+install_neovim_from_source_ubuntu() {
+  local ver="$1"  # e.g., 0.11.6
+  note "Building Neovim v${ver} from source"
+
+  # Build prerequisites from Neovim docs
+  ensure_pkg_apt build-essential
+  ensure_pkg_apt git
+  ensure_pkg_apt ninja-build
+  ensure_pkg_apt gettext
+  ensure_pkg_apt libtool || true
+  ensure_pkg_apt libtool-bin || true
+  ensure_pkg_apt autoconf
+  ensure_pkg_apt automake
+  ensure_pkg_apt cmake
+  ensure_pkg_apt g++
+  ensure_pkg_apt pkg-config
+  ensure_pkg_apt unzip
+  ensure_pkg_apt curl
+  ensure_pkg_apt doxygen || true
+
+  local work
+  work="/tmp/neovim-build-$(date +%s)"
+  rm -rf "$work"
+  git clone --depth=1 --branch "v${ver}" https://github.com/neovim/neovim.git "$work"
+  make -C "$work" CMAKE_BUILD_TYPE=RelWithDebInfo
+  sudo make -C "$work" install
+
+  if nvim --version | head -n1 | grep -q "NVIM v${ver}"; then
+    ok "Neovim v${ver} installed from source"
+  else
+    warn "Neovim v${ver} build completed, but version check did not match; please verify manually"
+  fi
+}
+
 ensure_neovim_ubuntu() {
   # If Neovim exists, only accept 0.11.x; otherwise, ask user to uninstall
   if is_cmd nvim; then
@@ -168,8 +202,8 @@ ensure_neovim_ubuntu() {
     note "Installing neovim=${target} (0.11.x)"
     sudo apt-get install -y "neovim=${target}"
   else
-    warn "Could not find Neovim 0.11.x in APT sources; please add a repository that provides it or install manually."
-    return 1
+    warn "Could not find Neovim 0.11.x in APT; building v0.11.6 from source"
+    install_neovim_from_source_ubuntu "0.11.6"
   fi
 }
 
