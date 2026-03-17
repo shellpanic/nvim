@@ -5,7 +5,24 @@ return {
    dependencies = {},
    init = function()
       vim.g.rustaceanvim = function()
-         return {
+         local function detect_adapter()
+            if vim.fn.executable("codelldb") == 1 then
+               return {
+                  type = "server",
+                  host = "127.0.0.1",
+                  port = "${port}",
+                  executable = { command = "codelldb", args = { "--port", "${port}" } },
+               }
+            end
+            local has_dap = vim.fn.executable("lldb-dap") == 1
+            local has_vscode = vim.fn.executable("lldb-vscode") == 1
+            if has_dap or has_vscode then
+               return { type = "executable", command = has_dap and "lldb-dap" or "lldb-vscode", name = "lldb" }
+            end
+            return false
+         end
+
+         local conf = {
             server = {
                settings = {
                   ["rust-analyzer"] = {
@@ -64,6 +81,8 @@ return {
                end,
             },
          }
+         conf.dap = { adapter = detect_adapter }
+         return conf
       end
    end,
 }

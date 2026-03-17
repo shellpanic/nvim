@@ -24,19 +24,18 @@ return {
                "marksman",
                "lua-language-server",
                "rust-analyzer",
-               "ruff-lsp",
+               -- Use built-in Ruff LSP (ruff >= 0.4)
+               "ruff",
                --- DAP
                "codelldb",
                "debugpy",
                -- Linter
                "flake8",
                "pyproject-flake8",
-               "ruff",
                "eslint_d",
                "markdownlint",
                "yamllint",
                "selene",
-               "ast-grep",
                -- Formatter
                "prettier",
                "stylua",

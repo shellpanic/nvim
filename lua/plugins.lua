@@ -19,6 +19,7 @@ return require("lazy").setup({
    require("plugins.editor.treesitter"),
    require("plugins.editor.linter"),
    require("plugins.editor.conform"),
+   require("plugins.editor.yaml"),
    require("plugins.editor.cmp"),
 
    -- Markdown

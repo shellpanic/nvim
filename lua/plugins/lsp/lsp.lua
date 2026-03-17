@@ -155,13 +155,13 @@ return {
          })
          vim.lsp.enable("basedpyright")
 
-         -- Python: add Ruff LSP alongside basedpyright for fast lint/fixes
-         vim.lsp.config("ruff_lsp", {
+         -- Python: use Ruff's built-in LSP (preferred over deprecated ruff-lsp)
+         vim.lsp.config("ruff", {
             on_attach = on_attach,
             capabilities = capabilities,
             init_options = { settings = { args = {} } },
          })
-         vim.lsp.enable("ruff_lsp")
+         vim.lsp.enable("ruff")
 
          -- YAML: enable schema store and Docker Compose schemas
          vim.lsp.config("yamlls", {
