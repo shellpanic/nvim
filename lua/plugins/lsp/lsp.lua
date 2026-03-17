@@ -23,7 +23,7 @@ return {
          })
 
          local lsp_signature = require("lsp_signature")
-         local lsp_signature_cfg = { floating_windows = true, hint_enable = true, hint_prefix = "󰷻 " }
+         local lsp_signature_cfg = { floating_windows = true, hint_enable = false, hint_prefix = "󰷻 " }
          local on_attach = function(_, bufnr)
             vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
             lsp_signature.on_attach(lsp_signature_cfg, bufnr)
@@ -79,6 +79,20 @@ return {
             vim.keymap.set("n", p .. "f", function()
                vim.lsp.buf.format({ async = true })
             end, { desc = "LSP: Format", unpack(bufopts) })
+
+            -- Show signature help automatically on CursorHold in normal mode
+            local group = vim.api.nvim_create_augroup("LspSignatureOnHold" .. bufnr, { clear = true })
+            vim.api.nvim_create_autocmd("CursorHold", {
+               group = group,
+               buffer = bufnr,
+               callback = function()
+                  if vim.fn.mode() == "n" then
+                     pcall(function()
+                        lsp_signature.signature({})
+                     end)
+                  end
+               end,
+            })
          end
 
          local lua_ls_setup = {
@@ -86,6 +100,7 @@ return {
                runtime = { version = "LuaJIT", path = vim.split(package.path, ";") },
                diagnostics = { globals = { "vim" } },
                workspace = { library = vim.api.nvim_get_runtime_file("", true), checkThirdParty = false },
+               completion = { callSnippet = "Both" },
                telemetry = { enable = false },
             },
          }
@@ -101,6 +116,12 @@ return {
             on_attach = on_attach,
             capabilities = capabilities,
             filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
+            init_options = {
+               preferences = {
+                  includeCompletionsWithSnippetText = true,
+                  includeCompletionsWithInsertTextCompletions = true,
+               },
+            },
          })
          vim.lsp.enable("ts_ls")
 
@@ -122,6 +143,14 @@ return {
 
          -- Reduce LSP log noise and file size
          pcall(vim.lsp.set_log_level, "ERROR")
+
+         -- Prefer minimal virtual text by default (warn/error only)
+         pcall(vim.diagnostic.config, {
+            virtual_text = { severity = { min = vim.diagnostic.severity.WARN } },
+            update_in_insert = false,
+            underline = true,
+            severity_sort = true,
+         })
 
          -- Diagnostics enabled by default; uncomment to disable
          -- vim.lsp.handlers["textDocument/publishDiagnostics"] = function() end

@@ -7,6 +7,11 @@ return {
       vim.g.rustaceanvim = function()
          return {
             server = {
+               settings = {
+                  ["rust-analyzer"] = {
+                     completion = { callSnippet = "AddArguments" },
+                  },
+               },
                on_attach = function(_, bufnr)
                   local bufopts = { noremap = true, silent = true, buffer = bufnr }
                   local p = "<leader>l"

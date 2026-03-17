@@ -74,12 +74,23 @@ return {
             sorting = {
                priority_weight = 2,
                comparators = (function()
+                  -- Deprioritize items with leading underscores
+                  local function leading_underscore(entry1, entry2)
+                     local label1 = entry1.completion_item.label or ""
+                     local label2 = entry2.completion_item.label or ""
+                     local _, count1 = label1:gsub("^_+", "")
+                     local _, count2 = label2:gsub("^_+", "")
+                     if count1 ~= count2 then
+                        return count1 < count2
+                     end
+                  end
                   local list = {
                      cmp_compare.offset,
                      cmp_compare.exact,
                      cmp_compare.score,
                      cmp_compare.recently_used,
                      cmp_compare.locality,
+                     leading_underscore,
                      cmp_compare.kind,
                      cmp_compare.sort_text,
                      cmp_compare.length,
@@ -135,13 +146,22 @@ return {
                ["<C-f>"] = cmp.mapping.scroll_docs(4),
                ["<C-k>"] = cmp.mapping.select_prev_item(),
                ["<C-j>"] = cmp.mapping.select_next_item(),
-               -- Use Ctrl+Y to confirm; plain Enter falls back to newline
-               ["<C-y>"] = cmp.mapping.confirm({ select = false }),
+               -- Confirm selection: Enter confirms only when an item is selected
                ["<CR>"] = cmp.mapping(function(fallback)
-                  fallback()
-               end),
-               ["<C-Esc>"] = cmp.mapping.confirm({ select = false }),
-               ["<C-e>"] = cmp.mapping.abort(),
+                  if cmp.visible() and cmp.get_selected_entry() then
+                     cmp.confirm({ select = false })
+                  else
+                     fallback()
+                  end
+               end, { "i", "s" }),
+               -- Esc closes the menu if open; otherwise behaves normally
+               ["<Esc>"] = cmp.mapping(function(fallback)
+                  if cmp.visible() then
+                     cmp.abort()
+                  else
+                     fallback()
+                  end
+               end, { "i" }),
                ["<Tab>"] = cmp.mapping(function(fallback)
                   if cmp.visible() then
                      cmp.select_next_item(select_opts)
@@ -174,6 +194,7 @@ return {
                   end
                end, { "i", "s" }),
             },
+            experimental = { ghost_text = true },
          })
 
          cmp.setup.filetype(
@@ -187,11 +208,69 @@ return {
                { name = "path", keyword_length = 2 },
             }),
          })
-         cmp.setup.cmdline({ "/", "?" }, { mapping = cmp.mapping.preset.cmdline(), sources = { { name = "buffer" } } })
-         cmp.setup.cmdline(":", {
-            mapping = cmp.mapping.preset.cmdline(),
-            sources = cmp.config.sources({ { name = "path" } }, { { name = "cmdline" } }),
+         -- Cmdline completion: use Ctrl-j/k to navigate; Esc to cancel
+         local cmdline_mappings = cmp.mapping.preset.cmdline()
+         -- Let <Down>/<Up> behave normally (history), not control cmp
+         cmdline_mappings["<Down>"] = cmp.mapping(function(fallback) fallback() end, { "c" })
+         cmdline_mappings["<Up>"] = cmp.mapping(function(fallback) fallback() end, { "c" })
+         cmdline_mappings["<C-j>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+               cmp.select_next_item()
+            else
+               fallback()
+            end
+         end, { "c" })
+         cmdline_mappings["<C-k>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+               cmp.select_prev_item()
+            else
+               fallback()
+            end
+         end, { "c" })
+         -- Enter confirms only when an entry is selected; otherwise runs the command
+         cmdline_mappings["<CR>"] = cmp.mapping(function(fallback)
+            if cmp.visible() and cmp.get_selected_entry() then
+               cmp.confirm({ select = false })
+            else
+               fallback()
+            end
+         end, { "c" })
+         -- Esc closes the menu if open; otherwise leaves cmdline as usual
+         cmdline_mappings["<Esc>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+               cmp.abort()
+            else
+               fallback()
+            end
+         end, { "c" })
+
+         cmp.setup.cmdline({ "/", "?" }, {
+            mapping = cmdline_mappings,
+            sources = { { name = "buffer" } },
          })
+         cmp.setup.cmdline(":", {
+            mapping = cmdline_mappings,
+            sources = cmp.config.sources(
+               { { name = "path" } },
+               { { name = "cmdline", option = { ignore_cmds = { "Man", "!" } } } }
+            ),
+         })
+
+         -- Integrate with nvim-autopairs: add () on confirm, but skip when LSP provides a snippet (to keep placeholders)
+         pcall(function()
+            local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+            local handler = cmp_autopairs.on_confirm_done()
+            cmp.event:on("confirm_done", function(evt)
+               local ok, entry = pcall(function() return evt.entry end)
+               if not ok or not entry then return end
+               local item = entry:get_completion_item()
+               if item and item.insertTextFormat == 2 then
+                  -- LSP already expands a snippet with parameters; don't add extra parens
+                  return
+               end
+               handler(evt)
+            end)
+         end)
       end,
    },
 }
