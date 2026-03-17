@@ -18,6 +18,9 @@ return {
       config = function()
          vim.opt.completeopt = { "menu", "menuone", "noselect" }
          require("luasnip.loaders.from_vscode").lazy_load()
+         pcall(function()
+            require("luasnip.loaders.from_lua").lazy_load({ paths = vim.fn.stdpath("config") .. "/lua/snippets" })
+         end)
          local luasnip = require("luasnip")
          local lspkind = require("lspkind")
          local cmp = require("cmp")
@@ -208,6 +211,15 @@ return {
                { name = "path", keyword_length = 2 },
             }),
          })
+         -- Cargo.toml: enable Crates completion
+         pcall(function()
+            cmp.setup.filetype("toml", {
+               sources = cmp.config.sources({ { name = "crates" } }, {
+                  { name = "path", keyword_length = 2 },
+                  { name = "buffer", keyword_length = 3 },
+               }),
+            })
+         end)
          -- Cmdline completion: use Ctrl-j/k to navigate; Esc to cancel
          local cmdline_mappings = cmp.mapping.preset.cmdline()
          -- Let <Down>/<Up> behave normally (history), not control cmp

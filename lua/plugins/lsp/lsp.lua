@@ -128,10 +128,64 @@ return {
          require("flutter-tools").setup({ lsp = { on_attach = on_attach, capabilities = capabilities } })
 
          -- Configure standard servers
-         for _, name in ipairs({ "basedpyright", "taplo", "bashls", "vue_ls" }) do
+         for _, name in ipairs({ "taplo", "bashls", "vue_ls", "dockerls", "docker_compose_language_service" }) do
             vim.lsp.config(name, { on_attach = on_attach, capabilities = capabilities })
             vim.lsp.enable(name)
          end
+
+         -- Python: BasedPyright with inlay hints and workspace diagnostics
+         vim.lsp.config("basedpyright", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            settings = {
+               python = {
+                  analysis = {
+                     typeCheckingMode = "basic",
+                     autoImportCompletions = true,
+                     diagnosticMode = "workspace",
+                     inlayHints = {
+                        variableTypes = true,
+                        functionReturnTypes = true,
+                        parameterNames = "all",
+                        parameterTypes = true,
+                     },
+                  },
+               },
+            },
+         })
+         vim.lsp.enable("basedpyright")
+
+         -- Python: add Ruff LSP alongside basedpyright for fast lint/fixes
+         vim.lsp.config("ruff_lsp", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            init_options = { settings = { args = {} } },
+         })
+         vim.lsp.enable("ruff_lsp")
+
+         -- YAML: enable schema store and Docker Compose schemas
+         vim.lsp.config("yamlls", {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            settings = {
+               yaml = {
+                  completion = true,
+                  validate = true,
+                  hover = true,
+                  format = { enable = false },
+                  schemaStore = { enable = true, url = "https://www.schemastore.org/api/json/catalog.json" },
+                  schemas = {
+                     ["https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json"] = {
+                        "docker-compose*.yml",
+                        "docker-compose*.yaml",
+                        "compose*.yml",
+                        "compose*.yaml",
+                     },
+                  },
+               },
+            },
+         })
+         vim.lsp.enable("yamlls")
 
          -- Override marksman to avoid unknown filetype 'markdown.mdx'
          vim.lsp.config("marksman", {

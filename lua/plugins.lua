@@ -30,6 +30,7 @@ return require("lazy").setup({
    require("plugins.lsp.lsp"),
    require("plugins.lsp.flutter-tools"),
    require("plugins.lsp.rustacean"),
+   require("plugins.lsp.crates"),
 
    -- DAP
    require("plugins.dap.dap"),
