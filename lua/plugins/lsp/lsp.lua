@@ -5,10 +5,8 @@ return {
          "folke/neodev.nvim",
          "hrsh7th/cmp-nvim-lsp",
          { "ray-x/lsp_signature.nvim", event = "VeryLazy" },
-         { "linrongbin16/lsp-progress.nvim" },
       },
       config = function()
-         require("lsp-progress").setup()
          require("neodev").setup({
             library = { enabled = true, runtime = true, types = true, plugins = { "nvim-dap-ui" } },
             setup_jsonls = true,

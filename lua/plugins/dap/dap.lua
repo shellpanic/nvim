@@ -18,6 +18,13 @@ return {
          local dapui = require("dapui")
          dapui.setup()
          local dap = require("dap")
+         -- Some plugins still call deprecated load_launchjs; neutralize to avoid warnings
+         pcall(function()
+            local vscode = require("dap.ext.vscode")
+            if type(vscode.load_launchjs) == "function" then
+               vscode.load_launchjs = function() end
+            end
+         end)
          vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticError", linehl = "", numhl = "" })
          vim.fn.sign_define(
             "DapStopped",
