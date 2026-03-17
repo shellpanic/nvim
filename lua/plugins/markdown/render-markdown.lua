@@ -5,7 +5,7 @@ return {
    ---@type render.md.UserConfig
    opts = {
       enabled = true,
-      file_types = { "markdown", "copilot-chat" },
+      file_types = { "markdown" },
       latex = { enabled = false },
    },
 }

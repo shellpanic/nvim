@@ -38,7 +38,6 @@ return require("lazy").setup({
    require("plugins.testing.neotest"),
 
    -- AI
-   require("plugins.ai.copilot-chat"),
    require("plugins.ai.codex"),
 
    -- Misc

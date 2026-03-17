@@ -2,14 +2,7 @@ return {
    "mrcjkb/rustaceanvim",
    version = "^4",
    ft = { "rust" },
-   dependencies = {
-      {
-         "zbirenbaum/copilot-cmp",
-         config = function()
-            require("copilot_cmp").setup()
-         end,
-      },
-   },
+   dependencies = {},
    init = function()
       vim.g.rustaceanvim = function()
          return {

@@ -17,7 +17,6 @@ return {
             ensure_installed = {
                -- LSP
                "vue-language-server",
-               "copilot-language-server",
                --- DAP
                "codelldb",
                "debugpy",
