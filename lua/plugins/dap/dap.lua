@@ -1,10 +1,7 @@
 return {
    {
       "mfussenegger/nvim-dap",
-      -- Ensure nvim-nio is available before dap-ui to satisfy its requirement
-      dependencies = {
-         { "rcarriga/nvim-dap-ui", dependencies = { "nvim-neotest/nvim-nio" } },
-      },
+      -- Only load when using DAP commands
       cmd = {
          "DapToggleBreakpoint",
          "DapTerminate",
@@ -14,10 +11,29 @@ return {
          "DapStepOut",
          "DapPythonTestMethod",
       },
+      -- UI integration is optional; avoid forcing install at startup
+      dependencies = {
+         {
+            "rcarriga/nvim-dap-ui",
+            optional = true,
+            dependencies = { "nvim-neotest/nvim-nio" },
+         },
+      },
       config = function()
-         local dapui = require("dapui")
-         dapui.setup()
          local dap = require("dap")
+         local has_dapui, dapui = pcall(require, "dapui")
+         if has_dapui then
+            pcall(dapui.setup)
+            dap.listeners.after.event_initialized["dapui_config"] = function()
+               dapui.open()
+            end
+            dap.listeners.before.event_terminated["dapui_config"] = function()
+               dapui.close()
+            end
+            dap.listeners.before.event_exited["dapui_config"] = function()
+               dapui.close()
+            end
+         end
          -- Some plugins still call deprecated load_launchjs; neutralize to avoid warnings
          pcall(function()
             local vscode = require("dap.ext.vscode")
@@ -42,16 +58,7 @@ return {
             "DapLogPoint",
             { text = "", texthl = "DapLogPoint", linehl = "DapLogPoint", numhl = "DapLogPoint" }
          )
-         dap.listeners.after.event_initialized["dapui_config"] = function()
-            dapui.open()
-         end
-         dap.listeners.before.event_terminated["dapui_config"] = function()
-            dapui.close()
-         end
-         dap.listeners.before.event_exited["dapui_config"] = function()
-            dapui.close()
-         end
-         -- load_launchjs is deprecated; nvim-dap reads .vscode/launch.json on-demand now
+         -- Python adapter convenience
          local function setup_debugpy()
             local ok, dap_python = pcall(require, "dap-python")
             if not ok then
@@ -77,14 +84,22 @@ return {
                require("dap-python").test_method()
             end, {})
          end)
-         table.insert(require("dap").configurations.python, {
-            type = "python",
-            request = "launch",
-            name = "FastApi App",
-            module = "uvicorn",
-            args = { "app.main:app", "--reload" },
-         })
+         -- Example Python launch config
+         pcall(function()
+            table.insert(dap.configurations.python, {
+               type = "python",
+               request = "launch",
+               name = "FastApi App",
+               module = "uvicorn",
+               args = { "app.main:app", "--reload" },
+            })
+         end)
       end,
    },
-   { "mfussenegger/nvim-dap-python", dependencies = { "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui" } },
+   -- Load only for Python files to avoid startup cost
+   {
+      "mfussenegger/nvim-dap-python",
+      ft = { "python" },
+      dependencies = { "mfussenegger/nvim-dap" },
+   },
 }
