@@ -1,6 +1,11 @@
 -- LSP domain keymaps
 -- no return; this module is for side-effect keymaps only
 
+-- Label nested Rust group under LSP for which-key
+pcall(function()
+   require("which-key").add({ { "<leader>lr", group = "Rust" } })
+end)
+
 -- Toggle LSP signature help window (keep as <leader>ls)
 vim.keymap.set("n", "<Leader>ls", function()
    local ok, lsp_signature = pcall(require, "lsp_signature")

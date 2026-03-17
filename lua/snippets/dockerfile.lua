@@ -15,8 +15,15 @@ COPY {} {}
 RUN {}
 CMD [{}]
 ]],
-         { i(1, "alpine:latest"), i(2, "build"), i(3, "/app"), i(4, "."), i(5, "/app"), i(6, "echo build"), i(7, '"/bin/sh"') }
+         {
+            i(1, "alpine:latest"),
+            i(2, "build"),
+            i(3, "/app"),
+            i(4, "."),
+            i(5, "/app"),
+            i(6, "echo build"),
+            i(7, '"/bin/sh"'),
+         }
       )
    ),
 }
-

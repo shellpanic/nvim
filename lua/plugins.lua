@@ -29,6 +29,11 @@ return require("lazy").setup({
    -- LSP
    require("plugins.lsp.mason"),
    require("plugins.lsp.lsp"),
+   -- Language-specific LSP modules
+   require("plugins.lsp.lang.typescript"),
+   require("plugins.lsp.lang.python"),
+   require("plugins.lsp.lang.yaml"),
+   require("plugins.lsp.lang.markdown"),
    require("plugins.lsp.flutter-tools"),
    require("plugins.lsp.rustacean"),
    require("plugins.lsp.crates"),

@@ -61,7 +61,15 @@ return {
                { name = "path", keyword_length = 2 },
                -- Show LSP items as soon as they are available (incl. trigger chars)
                { name = "nvim_lsp", keyword_length = 0 },
-               { name = "buffer", keyword_length = 4, option = { get_bufnrs = function() return { vim.api.nvim_get_current_buf() } end } },
+               {
+                  name = "buffer",
+                  keyword_length = 4,
+                  option = {
+                     get_bufnrs = function()
+                        return { vim.api.nvim_get_current_buf() }
+                     end,
+                  },
+               },
                { name = "luasnip", keyword_length = 2 },
             },
             window = {
@@ -109,6 +117,9 @@ return {
                end)(),
             },
             formatting = {
+               -- De-duplicate identical labels across sources (prefer LSP)
+               duplicates_default = 0,
+               duplicates = { nvim_lsp = 0, buffer = 1, path = 1, luasnip = 1 },
                format = lspkind.cmp_format({
                   mode = "symbol",
                   maxwidth = 50,
@@ -223,8 +234,12 @@ return {
          -- Cmdline completion: use Ctrl-j/k to navigate; Esc to cancel
          local cmdline_mappings = cmp.mapping.preset.cmdline()
          -- Let <Down>/<Up> behave normally (history), not control cmp
-         cmdline_mappings["<Down>"] = cmp.mapping(function(fallback) fallback() end, { "c" })
-         cmdline_mappings["<Up>"] = cmp.mapping(function(fallback) fallback() end, { "c" })
+         cmdline_mappings["<Down>"] = cmp.mapping(function(fallback)
+            fallback()
+         end, { "c" })
+         cmdline_mappings["<Up>"] = cmp.mapping(function(fallback)
+            fallback()
+         end, { "c" })
          cmdline_mappings["<C-j>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
                cmp.select_next_item()
@@ -273,8 +288,12 @@ return {
             local cmp_autopairs = require("nvim-autopairs.completion.cmp")
             local handler = cmp_autopairs.on_confirm_done()
             cmp.event:on("confirm_done", function(evt)
-               local ok, entry = pcall(function() return evt.entry end)
-               if not ok or not entry then return end
+               local ok, entry = pcall(function()
+                  return evt.entry
+               end)
+               if not ok or not entry then
+                  return
+               end
                local item = entry:get_completion_item()
                if item and item.insertTextFormat == 2 then
                   -- LSP already expands a snippet with parameters; don't add extra parens

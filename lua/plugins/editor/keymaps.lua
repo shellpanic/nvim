@@ -62,7 +62,9 @@ do
 
       -- Optional: forward/backward jump within snippet placeholders
       vim.keymap.set({ "i", "s" }, "<C-l>", function()
-         if ls.jumpable(1) then ls.jump(1) end
+         if ls.jumpable(1) then
+            ls.jump(1)
+         end
       end, { silent = true, desc = "Snippet: Next placeholder" })
       -- Use Shift-Tab in snippet context via default mappings, or map your own
    end

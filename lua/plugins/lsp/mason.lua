@@ -15,28 +15,30 @@ return {
 
          require("mason-tool-installer").setup({
             ensure_installed = {
-               -- LSP
-               "vue-language-server",
-               "yaml-language-server",
-               "dockerfile-language-server",
-               "docker-compose-language-service",
-               "basedpyright",
-               "marksman",
+               -- LSP (ensure these explicit languages are present; nothing auto-installs otherwise)
                "lua-language-server",
-               "rust-analyzer",
-               -- Use built-in Ruff LSP (ruff >= 0.4)
+               "typescript-language-server",
+               "yaml-language-server",
+               "marksman",
+               "basedpyright",
                "ruff",
-               --- DAP
+               "taplo", -- TOML LSP
+               "bash-language-server",
+               "dockerfile-language-server",
+               "vue-language-server",
+               "rust-analyzer",
+
+               -- DAP
                "codelldb",
                "debugpy",
-               -- Linter
+               -- Linters
                "flake8",
                "pyproject-flake8",
                "eslint_d",
                "markdownlint",
                "yamllint",
                "selene",
-               -- Formatter
+               -- Formatters & tools
                "prettier",
                "stylua",
                "beautysh",
@@ -44,8 +46,6 @@ return {
                "isort",
                "black",
                "yamlfmt",
-               "taplo",
-               "dcm",
             },
          })
       end,
