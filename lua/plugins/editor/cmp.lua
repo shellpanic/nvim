@@ -23,7 +23,7 @@ return {
          local cmp = require("cmp")
          local select_opts = { behavior = cmp.SelectBehavior.Select }
          local cmp_compare = cmp.config.compare
-         local ok_copilot, copilot_cmp = pcall(require, "copilot_cmp.comparators")
+         local context = require("cmp.config.context")
          local has_words_before = function()
             if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
                return false
@@ -32,26 +32,49 @@ return {
             return col ~= 0 and vim.api.nvim_buf_get_text(0, line - 1, 0, line - 1, col, {})[1]:match("^%s*$") == nil
          end
          cmp.setup({
+            enabled = function()
+               if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
+                  return false
+               end
+               return not context.in_treesitter_capture("comment") and not context.in_syntax_group("Comment")
+            end,
+            preselect = cmp.PreselectMode.None,
             snippet = {
                expand = function(args)
                   luasnip.lsp_expand(args.body)
                end,
             },
-            completion = { keyword_length = 1, keyword_completion = 1 },
-            sources = {
-               { name = "path" },
-               { name = "render-markdown" },
-               { name = "nvim_lsp", keyword_length = 1 },
-               { name = "buffer", keyword_length = 3 },
-               { name = "luasnip", keyword_length = 2 },
-               { name = "copilot", keyword_length = 2 },
+            -- Ensure the menu auto-opens on text changes when there are items
+            completion = {
+               autocomplete = { cmp.TriggerEvent.TextChanged },
+               keyword_length = 1,
             },
-            window = { documentation = cmp.config.window.bordered() },
+            matching = {
+               disallow_partial_fuzzy_matching = true,
+               disallow_prefix_unmatching = true,
+            },
+            performance = { debounce = 20, throttle = 30, fetching_timeout = 200 },
+            sources = {
+               { name = "path", keyword_length = 2 },
+               -- Show LSP items as soon as they are available (incl. trigger chars)
+               { name = "nvim_lsp", keyword_length = 0 },
+               { name = "buffer", keyword_length = 4, option = { get_bufnrs = function() return { vim.api.nvim_get_current_buf() } end } },
+               { name = "luasnip", keyword_length = 2 },
+            },
+            window = {
+               completion = cmp.config.window.bordered({
+                  border = "single",
+                  winhighlight = "Normal:NormalFloat,FloatBorder:Pmenu,CursorLine:PmenuSel,Search:None",
+               }),
+               documentation = cmp.config.window.bordered({
+                  border = "single",
+                  winhighlight = "Normal:NormalFloat,FloatBorder:Pmenu,CursorLine:PmenuSel,Search:None",
+               }),
+            },
             sorting = {
                priority_weight = 2,
                comparators = (function()
                   local list = {
-                     ok_copilot and copilot_cmp.prioritize or nil,
                      cmp_compare.offset,
                      cmp_compare.exact,
                      cmp_compare.score,
@@ -112,19 +135,22 @@ return {
                ["<C-f>"] = cmp.mapping.scroll_docs(4),
                ["<C-k>"] = cmp.mapping.select_prev_item(),
                ["<C-j>"] = cmp.mapping.select_next_item(),
-               ["<CR>"] = cmp.mapping.confirm({ select = true }),
+               -- Use Ctrl+Y to confirm; plain Enter falls back to newline
+               ["<C-y>"] = cmp.mapping.confirm({ select = false }),
+               ["<CR>"] = cmp.mapping(function(fallback)
+                  fallback()
+               end),
                ["<C-Esc>"] = cmp.mapping.confirm({ select = false }),
                ["<C-e>"] = cmp.mapping.abort(),
                ["<Tab>"] = cmp.mapping(function(fallback)
-                  local col = vim.fn.col(".") - 1
-                  if cmp.visible() and has_words_before() then
+                  if cmp.visible() then
                      cmp.select_next_item(select_opts)
-                  elseif col == 0 or vim.fn.getline("."):sub(col, col):match("%s") then
-                     fallback()
+                  elseif has_words_before() then
+                     cmp.complete()
                   else
-                     return
+                     fallback()
                   end
-               end, { "i", "n", "s" }),
+               end, { "i", "s" }),
                ["<C-Space>"] = cmp.mapping.complete(),
                ["<S-Tab>"] = cmp.mapping(function(fallback)
                   if cmp.visible() then
@@ -132,7 +158,7 @@ return {
                   else
                      fallback()
                   end
-               end, { "i", "n", "s" }),
+               end, { "i", "s" }),
                ["<C-S-f>"] = cmp.mapping(function(fallback)
                   if luasnip.jumpable(1) then
                      luasnip.jump(1)
@@ -154,6 +180,13 @@ return {
             "gitcommit",
             { sources = cmp.config.sources({ { name = "git" } }, { { name = "buffer" } }) }
          )
+         -- Markdown: enable render-markdown source only for these filetypes
+         cmp.setup.filetype({ "markdown", "markdown.mdx" }, {
+            sources = cmp.config.sources({ { name = "render-markdown" } }, {
+               { name = "buffer", keyword_length = 3 },
+               { name = "path", keyword_length = 2 },
+            }),
+         })
          cmp.setup.cmdline({ "/", "?" }, { mapping = cmp.mapping.preset.cmdline(), sources = { { name = "buffer" } } })
          cmp.setup.cmdline(":", {
             mapping = cmp.mapping.preset.cmdline(),
