@@ -1,7 +1,15 @@
 return {
    "nvim-lualine/lualine.nvim",
    lazy = false,
-   dependencies = { "nvim-tree/nvim-web-devicons" },
+   dependencies = {
+      "nvim-tree/nvim-web-devicons",
+      {
+         "linrongbin16/lsp-progress.nvim",
+         config = function()
+            require("lsp-progress").setup()
+         end,
+      },
+   },
    config = function()
       local lint_progress = function()
          local linters = require("lint").get_running()

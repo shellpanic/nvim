@@ -15,6 +15,8 @@ return {
             "jsonc",
             "yaml",
             "markdown",
+            "markdown_inline",
+            "dockerfile",
             "typescript",
             "javascript",
             "diff",

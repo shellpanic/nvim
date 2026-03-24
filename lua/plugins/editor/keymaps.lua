@@ -46,3 +46,26 @@ vim.keymap.set("v", "<Leader>cs", ":'<,'>ConformFormat<CR>", { silent = true, de
 
 -- Lint
 vim.keymap.set("n", "<Leader>cl", ":LintTry<CR>", { silent = true, desc = "Code: Lint now" })
+
+-- Snippets: quick controls (do not steal Tab)
+do
+   local ok, ls = pcall(require, "luasnip")
+   if ok then
+      -- Abort current snippet and keep text as-is
+      vim.keymap.set({ "i", "s" }, "<C-]>", function()
+         if ls.in_snippet() then
+            ls.unlink_current()
+         else
+            vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-]>", true, false, true), "n", true)
+         end
+      end, { silent = true, desc = "Snippet: Abort placeholders" })
+
+      -- Optional: forward/backward jump within snippet placeholders
+      vim.keymap.set({ "i", "s" }, "<C-l>", function()
+         if ls.jumpable(1) then
+            ls.jump(1)
+         end
+      end, { silent = true, desc = "Snippet: Next placeholder" })
+      -- Use Shift-Tab in snippet context via default mappings, or map your own
+   end
+end
