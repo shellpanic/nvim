@@ -35,6 +35,10 @@ return {
             end)
             return
          end
+         -- Apply 0.12 compatibility shims for query directives before setup
+         pcall(function()
+            require("plug-config.treesitter-compat").setup()
+         end)
          configs.setup(opts)
       end,
       init = function()
