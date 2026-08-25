@@ -27,44 +27,35 @@ return {
       local lazygit = Terminal:new({
          cmd = "lazygit",
          dir = "git_dir",
-         direction = "float",
-         float_opts = { border = "double" },
+         direction = "tab",
+         display_name = "LazyGit",
          on_open = function(term)
             vim.cmd("startinsert!")
-            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", { noremap = true, silent = true })
-         end,
-         on_close = function()
-            vim.cmd("startinsert!")
+            vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = term.bufnr, silent = true, desc = "Close LazyGit" })
          end,
       })
 
       local lazydocker = Terminal:new({
          cmd = "lazydocker",
-         direction = "float",
-         float_opts = { border = "double" },
+         direction = "tab",
+         display_name = "LazyDocker",
          on_open = function(term)
             vim.cmd("startinsert!")
-            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", { noremap = true, silent = true })
-         end,
-         on_close = function()
-            vim.cmd("startinsert!")
+            vim.keymap.set(
+               "n",
+               "q",
+               "<cmd>close<CR>",
+               { buffer = term.bufnr, silent = true, desc = "Close LazyDocker" }
+            )
          end,
       })
 
-      function _lazygit_toggle()
-         lazygit:toggle()
-      end
-
-      function _lazydocker_toggle()
-         lazydocker:toggle()
-      end
-
       -- user commands so mappings can live in domain keymaps
       vim.api.nvim_create_user_command("LazyGitToggle", function()
-         _lazygit_toggle()
+         lazygit:toggle()
       end, { force = true })
       vim.api.nvim_create_user_command("LazyDockerToggle", function()
-         _lazydocker_toggle()
+         lazydocker:toggle()
       end, { force = true })
    end,
 }

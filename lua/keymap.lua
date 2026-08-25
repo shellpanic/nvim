@@ -48,6 +48,7 @@ set_keymap("n", "<C-H>", "db", "Delete word before cursor in normal mode")
 set_keymap("n", "<C-a>", "gg<S-v>G", "Select all text")
 set_keymap("v", "<C-c>", '"+y', "Copy selection to system clipboard")
 set_keymap("v", "<C-v>", '"+p', "Paste from system clipboard")
+set_keymap("x", "p", "P", "Paste without replacing the yank register")
 
 -- Save and Save All
 set_keymap("n", "<C-s>", ":w<CR>", "Save the current file")

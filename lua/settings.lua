@@ -21,6 +21,8 @@ opt.shiftwidth = 3
 opt.softtabstop = 3
 opt.smarttab = true
 opt.numberwidth = 4
+opt.autoread = true
+opt.clipboard = "unnamedplus"
 
 -- Visualize all spaces, tabs, etc.
 opt.listchars = {
