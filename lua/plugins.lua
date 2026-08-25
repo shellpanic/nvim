@@ -1,7 +1,6 @@
 return require("lazy").setup({
    -- UI and Theme
    require("plugins.ui.rigel"),
-   require("plugins.ui.icons"),
    require("plugins.ui.devicons"),
    require("plugins.ui.dressing"),
    require("plugins.ui.indent"),
@@ -10,7 +9,6 @@ return require("lazy").setup({
 
    -- Editor
    require("plugins.editor.which-key"),
-   require("plugins.editor.comment"),
    require("plugins.editor.autopairs"),
    require("plugins.editor.telescope"),
    require("plugins.editor.gitsigns"),
@@ -26,10 +24,10 @@ return require("lazy").setup({
 
    -- Markdown
    require("plugins.markdown.render-markdown"),
-   require("plugins.markdown.peek"),
 
    -- LSP
    require("plugins.lsp.mason"),
+   require("plugins.lsp.lazydev"),
    require("plugins.lsp.lsp"),
    require("plugins.lsp.flutter-tools"),
    require("plugins.lsp.rustacean"),

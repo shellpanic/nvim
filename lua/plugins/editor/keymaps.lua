@@ -1,6 +1,10 @@
 -- Avoid prefix overlap: make clear-search a subkey of the search group (phrase: s+c)
 vim.keymap.set("n", "<Leader>sc", ":noh<CR>", { silent = true, desc = "Search: Clear highlight" })
 
+-- Neovim's built-in comment operator
+vim.keymap.set("n", "<Leader>/", "gcc", { remap = true, silent = true, desc = "Comment: Toggle line" })
+vim.keymap.set("x", "<Leader>/", "gc", { remap = true, silent = true, desc = "Comment: Toggle selection" })
+
 -- Telescope
 vim.keymap.set(
    "n",

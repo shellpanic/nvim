@@ -58,6 +58,7 @@ return {
             },
             performance = { debounce = 20, throttle = 30, fetching_timeout = 200 },
             sources = {
+               { name = "lazydev", group_index = 0 },
                { name = "path", keyword_length = 2 },
                -- Show LSP items as soon as they are available (incl. trigger chars)
                { name = "nvim_lsp", keyword_length = 0 },
@@ -211,10 +212,7 @@ return {
             experimental = { ghost_text = true },
          })
 
-         cmp.setup.filetype(
-            "gitcommit",
-            { sources = cmp.config.sources({ { name = "git" } }, { { name = "buffer" } }) }
-         )
+         cmp.setup.filetype("gitcommit", { sources = { { name = "buffer" } } })
          -- Markdown: enable render-markdown source only for these filetypes
          cmp.setup.filetype({ "markdown", "markdown.mdx" }, {
             sources = cmp.config.sources({ { name = "render-markdown" } }, {

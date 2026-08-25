@@ -17,7 +17,7 @@ return {
             { "<leader>e", group = "Editor" },
             { "<leader>g", group = "Git" },
             { "<leader>l", group = "LSP" },
-            { "<leader>lr", group = "Rust" },
+            { "<leader>lR", group = "Rust" },
             { "<leader>m", group = "Misc" },
             { "<leader>r", desc = "Reload file" },
             { "<leader>s", group = "Search" },

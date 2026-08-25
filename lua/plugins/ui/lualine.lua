@@ -1,18 +1,14 @@
 return {
    "nvim-lualine/lualine.nvim",
    lazy = false,
-   dependencies = {
-      "nvim-tree/nvim-web-devicons",
-      {
-         "linrongbin16/lsp-progress.nvim",
-         config = function()
-            require("lsp-progress").setup()
-         end,
-      },
-   },
+   dependencies = { "nvim-tree/nvim-web-devicons" },
    config = function()
       local lint_progress = function()
-         local linters = require("lint").get_running()
+         local lint = package.loaded["lint"]
+         if not lint then
+            return ""
+         end
+         local linters = lint.get_running()
          if #linters == 0 then
             return "󰦕"
          end
@@ -20,7 +16,7 @@ return {
       end
 
       local lsp_progress = function()
-         return require("lsp-progress").progress()
+         return vim.lsp.status()
       end
 
       local ai_sessions = function()
@@ -73,11 +69,10 @@ return {
          extensions = {},
       })
 
-      -- Listen for lsp-progress event and refresh lualine
+      -- Refresh the statusline when Neovim receives native LSP progress.
       vim.api.nvim_create_augroup("lualine_augroup", { clear = true })
-      vim.api.nvim_create_autocmd("User", {
+      vim.api.nvim_create_autocmd("LspProgress", {
          group = "lualine_augroup",
-         pattern = "LspProgressStatusUpdated",
          callback = require("lualine").refresh,
       })
    end,

@@ -30,7 +30,7 @@ local function build_on_attach()
       vim.keymap.set("n", p .. "q", vim.diagnostic.setloclist, { desc = "LSP: Diagnostics loclist", unpack(bufopts) })
 
       vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
-      vim.keymap.set("n", p .. "rn", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
+      vim.keymap.set("n", p .. "n", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
       vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, { desc = "LSP: Code actions", unpack(bufopts) })
       vim.keymap.set("n", p .. "a", vim.lsp.buf.code_action, { desc = "LSP: Code actions", unpack(bufopts) })
 

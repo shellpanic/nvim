@@ -2,27 +2,18 @@ return {
    {
       "neovim/nvim-lspconfig",
       dependencies = {
-         "folke/neodev.nvim",
          "hrsh7th/cmp-nvim-lsp",
          { "ray-x/lsp_signature.nvim", event = "VeryLazy" },
       },
       config = function()
-         require("neodev").setup({
-            library = { enabled = true, runtime = true, types = true, plugins = { "nvim-dap-ui" } },
-            setup_jsonls = true,
-            override = function() end,
-            lspconfig = true,
-            pathStrict = true,
-         })
-
          local common = require("plugins.lsp.common")
          local servers = {
             lua_ls = {
                settings = {
                   Lua = {
-                     runtime = { version = "LuaJIT", path = vim.split(package.path, ";") },
+                     runtime = { version = "LuaJIT" },
                      diagnostics = { globals = { "vim" } },
-                     workspace = { library = vim.api.nvim_get_runtime_file("", true), checkThirdParty = false },
+                     workspace = { checkThirdParty = false },
                      completion = { callSnippet = "Both" },
                      telemetry = { enable = false },
                   },
