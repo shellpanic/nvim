@@ -1,7 +1,12 @@
 -- AI domain keymaps
 -- no return; this module is for side-effect keymaps only
 
-vim.keymap.set("n", "<leader>aa", ":Sidekick cli toggle<CR>", { silent = true, desc = "AI: Toggle active CLI" })
+vim.keymap.set(
+   "n",
+   "<leader>aa",
+   ":Sidekick cli toggle<CR>",
+   { silent = true, desc = "AI: Toggle active Sidekick CLI" }
+)
 vim.keymap.set(
    "n",
    "<leader>ac",
@@ -14,7 +19,7 @@ vim.keymap.set(
    ":Sidekick cli toggle name=codex focus=true<CR>",
    { silent = true, desc = "AI: Toggle Codex" }
 )
-vim.keymap.set("n", "<leader>as", ":Sidekick cli select<CR>", { silent = true, desc = "AI: Select CLI" })
+vim.keymap.set("n", "<leader>as", ":Sidekick cli select<CR>", { silent = true, desc = "AI: Select Sidekick CLI" })
 vim.keymap.set(
    { "n", "x" },
    "<leader>at",

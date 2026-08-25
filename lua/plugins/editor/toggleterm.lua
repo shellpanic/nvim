@@ -24,12 +24,20 @@ return {
       })
 
       local Terminal = require("toggleterm.terminal").Terminal
+
+      local function name_tab(term, name)
+         vim.api.nvim_buf_call(term.bufnr, function()
+            vim.cmd("silent noautocmd file term://" .. name)
+         end)
+      end
+
       local lazygit = Terminal:new({
          cmd = "lazygit",
          dir = "git_dir",
          direction = "tab",
-         display_name = "LazyGit",
+         display_name = "git",
          on_open = function(term)
+            name_tab(term, "git")
             vim.cmd("startinsert!")
             vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = term.bufnr, silent = true, desc = "Close LazyGit" })
          end,
@@ -38,8 +46,9 @@ return {
       local lazydocker = Terminal:new({
          cmd = "lazydocker",
          direction = "tab",
-         display_name = "LazyDocker",
+         display_name = "docker",
          on_open = function(term)
+            name_tab(term, "docker")
             vim.cmd("startinsert!")
             vim.keymap.set(
                "n",
