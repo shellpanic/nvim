@@ -16,6 +16,7 @@ return {
             { "<leader>d", group = "Debug" },
             { "<leader>e", group = "Editor" },
             { "<leader>l", group = "LSP" },
+            { "<leader>lr", group = "Rust" },
             { "<leader>m", group = "Misc" },
             { "<leader>r", desc = "Reload file" },
             { "<leader>s", group = "Search" },

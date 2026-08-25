@@ -28,8 +28,7 @@ return {
             vue = { "prettier" },
             ["_"] = { "trim_whitespace" },
          },
-         format_on_save = { lsp_fallback = true, async = false, timeout_ms = 500 },
-         format_after_save = { lsp_fallback = true },
+         format_on_save = { lsp_format = "fallback", async = false, timeout_ms = 500 },
          log_level = vim.log.levels.ERROR,
          notify_on_error = true,
       })
@@ -39,7 +38,7 @@ return {
          if opts.range ~= 0 then
             range = { start = opts.line1, finish = opts.line2 }
          end
-         conform.format({ lsp_fallback = true, async = false, timeout_ms = 500, range = range })
+         conform.format({ lsp_format = "fallback", async = false, timeout_ms = 500, range = range })
       end, { range = true })
    end,
 }

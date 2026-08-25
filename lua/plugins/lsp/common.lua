@@ -5,7 +5,7 @@ local function build_on_attach()
    local lsp_signature_cfg = { floating_windows = true, hint_enable = false, hint_prefix = "󰷻 " }
 
    return function(_, bufnr)
-      vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+      vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
       lsp_signature.on_attach(lsp_signature_cfg, bufnr)
       local bufopts = { noremap = true, silent = true, buffer = bufnr }
       local p = "<Leader>l"
