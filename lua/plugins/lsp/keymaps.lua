@@ -12,19 +12,8 @@ end, { silent = true, desc = "Toggle LSP signature window" })
 -- Toggle inlay hints for current buffer
 vim.keymap.set("n", "<Leader>li", function()
    local ih = vim.lsp.inlay_hint
-   if type(ih) == "table" then
-      local bufnr = vim.api.nvim_get_current_buf()
-      local enabled = false
-      if ih.is_enabled then
-         enabled = ih.is_enabled(bufnr)
-         ih.enable(bufnr, not enabled)
-      elseif ih.get then
-         enabled = ih.get(bufnr)
-         ih(bufnr, not enabled)
-      else
-         ih(bufnr, not enabled)
-      end
-   end
+   local filter = { bufnr = vim.api.nvim_get_current_buf() }
+   ih.enable(not ih.is_enabled(filter), filter)
 end, { silent = true, desc = "LSP: Toggle inlay hints" })
 
 -- Toggle diagnostics virtual text

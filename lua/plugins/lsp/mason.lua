@@ -45,6 +45,7 @@ return {
             "isort",
             "black",
             "yamlfmt",
+            "dcm",
          },
       })
    end,

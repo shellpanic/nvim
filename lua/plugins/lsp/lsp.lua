@@ -57,7 +57,7 @@ return {
          end
 
          -- Diagnostics defaults
-         vim.lsp.set_log_level("ERROR")
+         vim.lsp.log.set_level("ERROR")
          vim.diagnostic.config({
             virtual_text = { severity = { min = vim.diagnostic.severity.WARN } },
             update_in_insert = false,

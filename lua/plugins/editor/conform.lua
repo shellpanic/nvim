@@ -15,6 +15,7 @@ return {
             html = { "prettier" },
             json = { "prettier" },
             markdown = { "prettier" },
+            ["markdown.mdx"] = { "prettier" },
             graphql = { "prettier" },
             python = { "isort", "black" },
             lua = { "stylua" },

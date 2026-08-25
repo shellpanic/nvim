@@ -1,7 +1,7 @@
 return {
    {
       "nvim-treesitter/nvim-treesitter",
-      event = "VeryLazy",
+      event = { "BufReadPre", "BufNewFile" },
       build = ":TSUpdate",
       opts = {
          ensure_installed = {
@@ -35,10 +35,6 @@ return {
             end)
             return
          end
-         -- Apply 0.12 compatibility shims for query directives before setup
-         pcall(function()
-            require("plug-config.treesitter-compat").setup()
-         end)
          configs.setup(opts)
       end,
       init = function()
@@ -46,9 +42,9 @@ return {
          vim.opt.foldenable = false
          vim.opt.foldmethod = "expr"
          vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-         pcall(function()
-            vim.treesitter.language.register("bash", "zsh")
-         end)
+         vim.treesitter.language.register("bash", "zsh")
+         vim.treesitter.language.register("typescript", "ts")
+         vim.treesitter.language.register("markdown", "markdown.mdx")
       end,
    },
    {

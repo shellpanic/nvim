@@ -282,26 +282,6 @@ return {
                { { name = "cmdline", option = { ignore_cmds = { "Man", "!" } } } }
             ),
          })
-
-         -- Integrate with nvim-autopairs: add () on confirm, but skip when LSP provides a snippet (to keep placeholders)
-         pcall(function()
-            local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-            local handler = cmp_autopairs.on_confirm_done()
-            cmp.event:on("confirm_done", function(evt)
-               local ok, entry = pcall(function()
-                  return evt.entry
-               end)
-               if not ok or not entry then
-                  return
-               end
-               local item = entry:get_completion_item()
-               if item and item.insertTextFormat == 2 then
-                  -- LSP already expands a snippet with parameters; don't add extra parens
-                  return
-               end
-               handler(evt)
-            end)
-         end)
       end,
    },
 }
