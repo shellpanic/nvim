@@ -8,7 +8,7 @@ This configuration uses several Neovim plugins that depend on external tools and
 - C/C++ toolchain: gcc or clang (required for nvim-treesitter parsers and some plugin builds)
 
 ## Required language runtimes
-- Node.js (LTS or newer): required by `zbirenbaum/copilot.lua` (Copilot) and some language tooling
+- Node.js (LTS or newer): required by JavaScript-based language servers, linters, and formatters
 - Python 3: used by `nvim-dap-python`/`debugpy` and `neotest-python`; recommended to have `pip` and virtualenv available
 - Rust toolchain (`rustup`, `cargo`): required by `rustaceanvim` / rust-analyzer workflow
 - Flutter SDK + Dart: required by `flutter-tools.nvim`
@@ -19,15 +19,18 @@ This configuration uses several Neovim plugins that depend on external tools and
 - fd (optional but recommended): used by Telescope find_files for speed
 - lazygit (optional but mapped): used by ToggleTerm integration (`:LazyGitToggle`)
 - lazydocker (optional but mapped): used by ToggleTerm integration (`:LazyDockerToggle`)
+- Claude Code or Codex CLI (optional): used by Sidekick's editor-aware AI terminal integration
 - Docker (or Podman): required by `nvim-dev-container` to work with Dev Containers
 
 ## Managed automatically by Mason
 Mason will install and manage the following developer tools on demand (no need to preinstall globally):
 
-- LSP servers: `vue-language-server`, `copilot-language-server`
+- LSP servers: `lua-language-server`, `typescript-language-server`, `yaml-language-server`, `marksman`,
+  `basedpyright`, `ruff`, `taplo`, `bash-language-server`, `dockerfile-language-server`,
+  `vue-language-server`, `rust-analyzer`
 - DAP: `codelldb`, `debugpy`
-- Linters: `flake8`, `pyproject-flake8`, `eslint_d`, `markdownlint`, `selene`, `ast-grep`
-- Formatters: `prettier`, `stylua`, `beautysh`, `shfmt`, `isort`, `black`, `yamlfmt`, `taplo`, `dcm`
+- Linters: `flake8`, `pyproject-flake8`, `eslint_d`, `markdownlint`, `yamllint`, `selene`
+- Formatters: `prettier`, `stylua`, `beautysh`, `shfmt`, `isort`, `black`, `yamlfmt`, `dcm`
 
 Mason installs binaries into Neovim’s data directory; no system-wide installation is required for these.
 
@@ -46,8 +49,12 @@ Project-local configuration files take precedence. Set `DEVTOOLS_CONFIG_HOME` to
 Ruff diagnostics are provided by Ruff LSP; nvim-lint is reserved for tools without an active LSP integration.
 
 ## Plugin-specific notes
+- Sidekick: `-ac` opens Claude, `-ax` opens Codex, and `-as` selects another installed CLI. Use `Ctrl-t`
+  in a terminal to enter Neovim normal mode; the regular `-` leader mappings are then available.
+- Clipboard history: `-sr` opens the current session's yank history. History intentionally stays in memory so copied
+  credentials are not persisted to disk.
+- Git review: `-go` opens the repository diff, while `]h` and `[h` move between hunks in a file.
 - Treesitter: compiling parsers requires a working C toolchain (`gcc`/`clang`) and `make`.
-- Copilot Chat: the plugin’s `make tiktoken` step may require a compiler toolchain present at build time.
 - Peek (Markdown preview): requires `deno` to be installed and available in PATH.
 - Python DAP FastAPI example: a sample DAP configuration launches `uvicorn` via `python -m uvicorn app.main:app --reload`. Ensure `uvicorn` is installed in your project’s environment if you use that command.
 

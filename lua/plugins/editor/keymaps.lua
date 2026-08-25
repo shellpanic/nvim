@@ -38,7 +38,14 @@ vim.keymap.set(
 )
 vim.keymap.set("n", "<Leader>tg", ":LazyGitToggle<CR>", { silent = true, desc = "Terminal: Open lazygit tui" })
 vim.keymap.set("n", "<Leader>td", ":LazyDockerToggle<CR>", { silent = true, desc = "Terminal: Open lazydocker tui" })
-vim.keymap.set("t", "<C-t>", "<C-\\><C-n>", { silent = true, desc = "Exit terminal mode" })
+vim.keymap.set("t", "<C-t>", "<C-\\><C-n>", { silent = true, desc = "Terminal: Enter Neovim normal mode" })
+vim.keymap.set("t", "<S-j>", "<C-\\><C-n><Cmd>tabprevious<CR>", { silent = true, desc = "Previous tab" })
+vim.keymap.set("t", "<S-k>", "<C-\\><C-n><Cmd>tabnext<CR>", { silent = true, desc = "Next tab" })
+
+-- Git review
+vim.keymap.set("n", "<Leader>go", ":DiffviewOpen<CR>", { silent = true, desc = "Git: Open repository diff" })
+vim.keymap.set("n", "<Leader>gc", ":DiffviewClose<CR>", { silent = true, desc = "Git: Close diff view" })
+vim.keymap.set("n", "<Leader>gh", ":DiffviewFileHistory %<CR>", { silent = true, desc = "Git: File history" })
 
 -- Code: Format & Lint moved under <leader>c
 vim.keymap.set("n", "<Leader>cf", ":ConformFormat<CR>", { silent = true, desc = "Code: Format file" })

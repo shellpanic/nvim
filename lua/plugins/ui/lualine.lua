@@ -23,6 +23,15 @@ return {
          return require("lsp-progress").progress()
       end
 
+      local ai_sessions = function()
+         local status = package.loaded["sidekick.status"]
+         if not status then
+            return ""
+         end
+         local sessions = status.cli()
+         return #sessions > 0 and (" " .. #sessions) or ""
+      end
+
       require("lualine").setup({
          options = {
             icons_enabled = true,
@@ -46,7 +55,7 @@ return {
             lualine_a = { "mode" },
             lualine_b = { "branch", "diff", "diagnostics", "filename" },
             lualine_c = { lint_progress, lsp_progress },
-            lualine_x = { "encoding", "fileformat", "filetype" },
+            lualine_x = { ai_sessions, "encoding", "fileformat", "filetype" },
             lualine_y = { "progress" },
             lualine_z = { "location" },
          },
