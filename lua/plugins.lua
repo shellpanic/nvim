@@ -10,6 +10,7 @@ return require("lazy").setup({
    -- Editor
    require("plugins.editor.which-key"),
    require("plugins.editor.autopairs"),
+   require("plugins.editor.surround"),
    require("plugins.editor.telescope"),
    require("plugins.editor.gitsigns"),
    require("plugins.editor.diffview"),
