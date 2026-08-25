@@ -1,3 +1,5 @@
+local devtools = require("devtools")
+
 return {
    basedpyright = {
       settings = {
@@ -17,6 +19,11 @@ return {
       },
    },
    ruff = {
-      init_options = { settings = { args = {} } },
+      init_options = {
+         settings = {
+            configuration = devtools.path("ruff.toml"),
+            configurationPreference = "filesystemFirst",
+         },
+      },
    },
 }

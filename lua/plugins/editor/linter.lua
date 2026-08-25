@@ -3,12 +3,32 @@ return {
    event = { "BufReadPre", "BufNewFile" },
    cmd = { "LintTry" },
    config = function()
+      local devtools = require("devtools")
       local lint = require("lint")
       lint.linters_by_ft = {
-         python = { "ruff" },
          markdown = { "markdownlint" },
          ["markdown.mdx"] = { "markdownlint" },
          yaml = { "yamllint" },
+      }
+
+      lint.linters.markdownlint.args = {
+         "--stdin",
+         "--config",
+         function()
+            return devtools.find_project_config("markdownlint", vim.api.nvim_buf_get_name(0))
+               or devtools.path("markdownlint.yaml")
+         end,
+      }
+
+      lint.linters.yamllint.args = {
+         "--format",
+         "parsable",
+         "--config-file",
+         function()
+            return devtools.find_project_config("yamllint", vim.api.nvim_buf_get_name(0))
+               or devtools.path("yamllint.yaml")
+         end,
+         "-",
       }
 
       local function available_linters()

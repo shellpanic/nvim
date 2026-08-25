@@ -31,6 +31,20 @@ Mason will install and manage the following developer tools on demand (no need t
 
 Mason installs binaries into Neovim’s data directory; no system-wide installation is required for these.
 
+## Shared devtool defaults
+
+Formatter and linter defaults are read from `$DEVTOOLS_CONFIG_HOME`, defaulting to `$XDG_CONFIG_HOME/devtools`
+or `~/.config/devtools`:
+
+- `ruff.toml`
+- `yamllint.yaml`
+- `markdownlint.yaml`
+- `stylua.toml`
+- `prettier.json`
+
+Project-local configuration files take precedence. Set `DEVTOOLS_CONFIG_HOME` to use a different central directory.
+Ruff diagnostics are provided by Ruff LSP; nvim-lint is reserved for tools without an active LSP integration.
+
 ## Plugin-specific notes
 - Treesitter: compiling parsers requires a working C toolchain (`gcc`/`clang`) and `make`.
 - Copilot Chat: the plugin’s `make tiktoken` step may require a compiler toolchain present at build time.

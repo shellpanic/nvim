@@ -3,6 +3,7 @@ return {
    event = { "BufReadPre", "BufNewFile" },
    cmd = { "ConformFormat" },
    config = function()
+      local devtools = require("devtools")
       local conform = require("conform")
       conform.setup({
          formatters_by_ft = {
@@ -32,8 +33,25 @@ return {
          format_on_save = { lsp_format = "fallback", async = false, timeout_ms = 500 },
          log_level = vim.log.levels.ERROR,
          notify_on_error = true,
+         formatters = {
+            prettier = {
+               prepend_args = function(_, ctx)
+                  if devtools.find_project_config("prettier", ctx.filename) then
+                     return {}
+                  end
+                  return { "--config", devtools.path("prettier.json") }
+               end,
+            },
+            stylua = {
+               prepend_args = function(_, ctx)
+                  if devtools.find_project_config("stylua", ctx.filename) then
+                     return {}
+                  end
+                  return { "--config-path", devtools.path("stylua.toml") }
+               end,
+            },
+         },
       })
-      conform.formatters.stylua = {}
       vim.api.nvim_create_user_command("ConformFormat", function(opts)
          local range = nil
          if opts.range ~= 0 then
