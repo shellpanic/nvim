@@ -13,6 +13,9 @@ return {
       })
 
       require("mason-tool-installer").setup({
+         run_on_start = true,
+         start_delay = 3000,
+         debounce_hours = 24,
          ensure_installed = {
             -- LSP (ensure these explicit languages are present; nothing auto-installs otherwise)
             "lua-language-server",
@@ -31,12 +34,8 @@ return {
             "codelldb",
             "debugpy",
             -- Linters
-            "flake8",
-            "pyproject-flake8",
-            "eslint_d",
             "markdownlint",
             "yamllint",
-            "selene",
             -- Formatters & tools
             "prettier",
             "stylua",

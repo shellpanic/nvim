@@ -1,6 +1,6 @@
 return {
    "mfussenegger/nvim-lint",
-   event = { "BufReadPre", "BufNewFile" },
+   ft = { "markdown", "markdown.mdx", "yaml" },
    cmd = { "LintTry" },
    config = function()
       local devtools = require("devtools")
