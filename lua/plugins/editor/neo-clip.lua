@@ -17,6 +17,13 @@ return {
             move_to_front = true,
             close_telescope = true,
          },
+         keys = {
+            telescope = {
+               n = {
+                  replay = "<C-q>",
+               },
+            },
+         },
       })
    end,
 }
