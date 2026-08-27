@@ -25,6 +25,7 @@ return require("lazy").setup({
 
    -- Markdown
    require("plugins.markdown.render-markdown"),
+   require("plugins.markdown.mermaid"),
 
    -- LSP
    require("plugins.lsp.mason"),
