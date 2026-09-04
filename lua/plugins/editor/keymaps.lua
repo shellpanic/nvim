@@ -27,13 +27,20 @@ vim.keymap.set(
 )
 
 -- ToggleTerm (avoid parent/child overlap by using <leader>tt)
-vim.keymap.set("n", "<Leader>tt", ":ToggleTerm direction=tab<CR>", { silent = true, desc = "Terminal: Open in tab" })
-vim.keymap.set(
-   "n",
-   "<Leader>tb",
-   ":ToggleTerm direction=horizontal<CR>",
-   { silent = true, desc = "Open terminal at bottom" }
-)
+-- Load toggleterm before running the command: while the plugin is still lazy,
+-- lazy.nvim's placeholder command takes no count, so `2<Leader>tt` is parsed as a
+-- line range (E16 in short buffers) and the terminal id is lost -- the count then
+-- falls back to 0 and toggles the terminal you are already in, closing it.
+local function toggle_term(direction)
+   return function()
+      require("toggleterm")
+      local count = vim.v.count > 0 and vim.v.count or ""
+      vim.cmd(string.format("%sToggleTerm direction=%s", count, direction))
+   end
+end
+
+vim.keymap.set("n", "<Leader>tt", toggle_term("tab"), { silent = true, desc = "Terminal: Open in tab" })
+vim.keymap.set("n", "<Leader>tb", toggle_term("horizontal"), { silent = true, desc = "Open terminal at bottom" })
 vim.keymap.set(
    "v",
    "<Leader>xv",
@@ -42,9 +49,35 @@ vim.keymap.set(
 )
 vim.keymap.set("n", "<Leader>tg", ":LazyGitToggle<CR>", { silent = true, desc = "Terminal: Open lazygit tui" })
 vim.keymap.set("n", "<Leader>td", ":LazyDockerToggle<CR>", { silent = true, desc = "Terminal: Open lazydocker tui" })
-vim.keymap.set("t", "<C-t>", "<C-\\><C-n>", { silent = true, desc = "Terminal: Enter Neovim normal mode" })
-vim.keymap.set("t", "<S-j>", "<C-\\><C-n><Cmd>tabprevious<CR>", { silent = true, desc = "Previous tab" })
-vim.keymap.set("t", "<S-k>", "<C-\\><C-n><Cmd>tabnext<CR>", { silent = true, desc = "Next tab" })
+-- Terminal escape layer
+-- In terminal mode Neovim forwards every key to the running program, so full-screen
+-- TUIs (claude, codex, lazygit, ...) swallow `-` and no leader mapping is reachable.
+-- Only mappings defined for mode "t" reach Neovim: keep them on Alt chords, which
+-- those TUIs leave alone, and route each one back into the normal-mode bindings.
+local function term_map(lhs, rhs, desc, opts)
+   opts = vim.tbl_extend("force", { silent = true, desc = "Terminal: " .. desc }, opts or {})
+   vim.keymap.set("t", lhs, rhs, opts)
+end
+
+local to_normal = "<C-\\><C-n>"
+
+term_map("<C-t>", to_normal, "Enter Neovim normal mode")
+term_map("<A-t>", to_normal, "Enter Neovim normal mode")
+-- Alt + the leader key opens the leader popup without leaving the terminal window first
+term_map(
+   "<A-" .. vim.g.mapleader .. ">",
+   to_normal .. vim.g.mapleader,
+   "Start a leader mapping",
+   { remap = true } -- the trailing leader key must hit the normal-mode mappings
+)
+term_map("<A-w>", to_normal .. "<C-w>", "Window command prefix")
+
+-- Mirror the normal-mode window/tab motions one Alt press away
+for key, motion in pairs({ Left = "h", Down = "j", Up = "k", Right = "l" }) do
+   term_map("<A-" .. key .. ">", to_normal .. "<C-w>" .. motion, "Move to the " .. key:lower() .. " window")
+end
+term_map("<A-J>", to_normal .. ":tabprevious<CR>", "Switch to the previous tab")
+term_map("<A-K>", to_normal .. ":tabnext<CR>", "Switch to the next tab")
 
 -- Git review
 vim.keymap.set("n", "<Leader>go", ":DiffviewOpen<CR>", { silent = true, desc = "Git: Open repository diff" })

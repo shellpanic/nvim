@@ -49,8 +49,16 @@ Project-local configuration files take precedence. Set `DEVTOOLS_CONFIG_HOME` to
 Ruff diagnostics are provided by Ruff LSP; nvim-lint is reserved for tools without an active LSP integration.
 
 ## Plugin-specific notes
-- Sidekick: `-ac` opens Claude, `-ax` opens Codex, and `-as` selects another installed CLI. Use `Ctrl-t`
-  in a terminal to enter Neovim normal mode; the regular `-` leader mappings are then available.
+- Sidekick: `-ac` opens Claude, `-ax` opens Codex, and `-as` selects another installed CLI.
+- Terminal escape layer: a running TUI (claude, codex, lazygit, a shell) receives every key, so `-` and the
+  leader mappings are invisible while the cursor is in terminal mode. These `t`-mode mappings stay with Neovim:
+  - `Ctrl-t` / `Alt-t`: hand the keyboard to Neovim (normal mode). In a terminal buffer `Ctrl-t` toggles:
+    press it again in normal mode to give the keyboard back to the running program. Outside a terminal it
+    still opens a new tab.
+  - `Alt--`: enter normal mode and start a leader mapping in one press (which-key pops up).
+  - `Alt-Left/Down/Up/Right`: jump straight to the window in that direction.
+  - `Alt-w`: acts as the `Ctrl-w` window prefix, e.g. `Alt-w` `v` splits, `Alt-w` `q` closes.
+  - `Alt-J` / `Alt-K`: previous/next tab, mirroring `Shift-j` / `Shift-k` in normal mode.
 - Clipboard history: `-sr` opens the current session's yank history. History intentionally stays in memory so copied
   credentials are not persisted to disk.
 - Git review: `-go` opens the repository diff, while `]h` and `[h` move between hunks in a file.
