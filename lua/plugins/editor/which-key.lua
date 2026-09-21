@@ -19,6 +19,7 @@ return {
             { "<leader>l", group = "LSP" },
             { "<leader>lR", group = "Rust" },
             { "<leader>m", group = "Misc" },
+            { "<leader>mr", group = "Remote SSH" },
             { "<leader>r", desc = "Reload file" },
             { "<leader>s", group = "Search" },
             { "<leader>t", group = "Terminal" },

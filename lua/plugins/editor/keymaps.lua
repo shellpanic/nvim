@@ -27,15 +27,25 @@ vim.keymap.set(
 )
 
 -- ToggleTerm (avoid parent/child overlap by using <leader>tt)
--- Load toggleterm before running the command: while the plugin is still lazy,
--- lazy.nvim's placeholder command takes no count, so `2<Leader>tt` is parsed as a
--- line range (E16 in short buffers) and the terminal id is lost -- the count then
--- falls back to 0 and toggles the terminal you are already in, closing it.
+-- An explicit count selects a terminal; it must never toggle an already visible
+-- terminal closed. Capture the count before loading the plugin, then use the
+-- terminal API directly so `2<Leader>tt` always shows/focuses terminal 2.
 local function toggle_term(direction)
    return function()
-      require("toggleterm")
-      local count = vim.v.count > 0 and vim.v.count or ""
-      vim.cmd(string.format("%sToggleTerm direction=%s", count, direction))
+      local count = vim.v.count
+      local toggleterm = require("toggleterm")
+
+      if count == 0 then
+         toggleterm.toggle(nil, nil, nil, direction)
+         return
+      end
+
+      local term = require("toggleterm.terminal").get_or_create_term(count, nil, direction)
+      if term:is_open() then
+         vim.api.nvim_set_current_win(term.window)
+      else
+         term:open(nil, direction)
+      end
    end
 end
 

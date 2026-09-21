@@ -28,6 +28,15 @@ return {
          return #sessions > 0 and (" " .. #sessions) or ""
       end
 
+      local remote_status = function()
+         if not package.loaded["remote-sshfs"] then
+            return ""
+         end
+
+         local ok, statusline = pcall(require, "remote-sshfs.statusline")
+         return ok and statusline.status() or ""
+      end
+
       require("lualine").setup({
          options = {
             icons_enabled = true,
@@ -51,7 +60,7 @@ return {
             lualine_a = { "mode" },
             lualine_b = { "branch", "diff", "diagnostics", "filename" },
             lualine_c = { lint_progress, lsp_progress },
-            lualine_x = { ai_sessions, "encoding", "fileformat", "filetype" },
+            lualine_x = { remote_status, ai_sessions, "encoding", "fileformat", "filetype" },
             lualine_y = { "progress" },
             lualine_z = { "location" },
          },

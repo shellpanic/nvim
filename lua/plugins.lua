@@ -46,5 +46,6 @@ return require("lazy").setup({
 
    -- Misc
    require("plugins.misc.devcontainer"),
+   require("plugins.misc.remote-sshfs"),
    require("plugins.misc.smoji"),
 })
