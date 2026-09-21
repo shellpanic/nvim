@@ -1,10 +1,9 @@
 return {
    "AckslD/nvim-neoclip.lua",
-   dependencies = { "kkharji/sqlite.lua" },
    config = function()
       require("neoclip").setup({
          history = 1000,
-         enable_persistent_history = true,
+         enable_persistent_history = false,
          preview = true,
          default_register = { '"', "+", "*" },
          initial_mode = "normal",

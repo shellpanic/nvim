@@ -3,7 +3,7 @@ local devtools = require("devtools")
 return {
    basedpyright = {
       settings = {
-         python = {
+         basedpyright = {
             analysis = {
                typeCheckingMode = "basic",
                autoImportCompletions = true,
