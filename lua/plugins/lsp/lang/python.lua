@@ -1,4 +1,9 @@
 local devtools = require("devtools")
+local ruff_settings = { configurationPreference = "filesystemFirst" }
+local ruff_config = devtools.existing_path("ruff.toml")
+if ruff_config then
+   ruff_settings.configuration = ruff_config
+end
 
 return {
    basedpyright = {
@@ -20,10 +25,7 @@ return {
    },
    ruff = {
       init_options = {
-         settings = {
-            configuration = devtools.path("ruff.toml"),
-            configurationPreference = "filesystemFirst",
-         },
+         settings = ruff_settings,
       },
    },
 }

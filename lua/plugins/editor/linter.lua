@@ -11,31 +11,39 @@ return {
          yaml = { "yamllint" },
       }
 
-      lint.linters.markdownlint.args = {
-         "--stdin",
-         "--config",
-         function()
-            return devtools.find_project_config("markdownlint", vim.api.nvim_buf_get_name(0))
-               or devtools.path("markdownlint.yaml")
-         end,
-      }
+      local markdownlint = require("lint.linters.markdownlint")
+      lint.linters.markdownlint = function()
+         local linter = vim.deepcopy(markdownlint)
+         local config = devtools.find_project_config("markdownlint", vim.api.nvim_buf_get_name(0))
+            or devtools.existing_path("markdownlint.yaml")
+         linter.args = { "--stdin" }
+         if config then
+            vim.list_extend(linter.args, { "--config", config })
+         end
+         return linter
+      end
 
-      lint.linters.yamllint.args = {
-         "--format",
-         "parsable",
-         "--config-file",
-         function()
-            return devtools.find_project_config("yamllint", vim.api.nvim_buf_get_name(0))
-               or devtools.path("yamllint.yaml")
-         end,
-         "-",
-      }
+      local yamllint = require("lint.linters.yamllint")
+      lint.linters.yamllint = function()
+         local linter = vim.deepcopy(yamllint)
+         local config = devtools.find_project_config("yamllint", vim.api.nvim_buf_get_name(0))
+            or devtools.existing_path("yamllint.yaml")
+         linter.args = { "--format", "parsable" }
+         if config then
+            vim.list_extend(linter.args, { "--config-file", config })
+         end
+         table.insert(linter.args, "-")
+         return linter
+      end
 
       local function available_linters()
          local configured = lint.linters_by_ft[vim.bo.filetype] or {}
          local available = {}
          for _, name in ipairs(configured) do
             local linter = lint.linters[name]
+            if type(linter) == "function" then
+               linter = linter()
+            end
             local cmd = linter and linter.cmd
             if type(cmd) == "string" and vim.fn.executable(cmd) == 1 then
                table.insert(available, name)

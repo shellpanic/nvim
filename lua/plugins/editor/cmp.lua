@@ -220,15 +220,13 @@ return {
                { name = "path", keyword_length = 2 },
             }),
          })
-         -- Cargo.toml: enable Crates completion
-         pcall(function()
-            cmp.setup.filetype("toml", {
-               sources = cmp.config.sources({ { name = "crates" } }, {
-                  { name = "path", keyword_length = 2 },
-                  { name = "buffer", keyword_length = 3 },
-               }),
-            })
-         end)
+         -- Cargo.toml receives crate versions from crates.nvim's in-process LSP.
+         cmp.setup.filetype("toml", {
+            sources = cmp.config.sources({ { name = "nvim_lsp" } }, {
+               { name = "path", keyword_length = 2 },
+               { name = "buffer", keyword_length = 3 },
+            }),
+         })
          -- Cmdline completion: use Ctrl-j/k to navigate; Esc to cancel
          local cmdline_mappings = cmp.mapping.preset.cmdline()
          -- Let <Down>/<Up> behave normally (history), not control cmp

@@ -13,13 +13,13 @@ return {
       })
 
       require("mason-tool-installer").setup({
-         run_on_start = true,
+         run_on_start = vim.env.CI ~= "true",
          start_delay = 3000,
          debounce_hours = 24,
          ensure_installed = {
             -- LSP (ensure these explicit languages are present; nothing auto-installs otherwise)
             "lua-language-server",
-            "typescript-language-server",
+            "vtsls",
             "yaml-language-server",
             "marksman",
             "basedpyright",

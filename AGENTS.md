@@ -21,7 +21,7 @@ Eager UI modules (load at startup):
 - Format check (CI): `stylua --check .` fails on unformatted code.
 - Health check: `nvim +checkhealth` opens Neovim health report.
 - Sync plugins: `nvim --headless +"Lazy! sync" +qa` installs/updates via lazy.nvim.
-- Minimal load: `nvim --clean -u init.lua` starts with this config only (good for debugging).
+- Minimal load: `nvim --clean --cmd "set runtimepath^=$PWD" -u init.lua` starts with this config only (good for debugging).
 - Eager UI: core UI is not lazy to guarantee startup experience (theme/colorscheme, devicons, statusline, dressing).
 
 ## Coding Style & Naming Conventions

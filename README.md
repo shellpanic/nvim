@@ -26,7 +26,7 @@ This configuration uses several Neovim plugins that depend on external tools and
 ## Managed automatically by Mason
 Mason will install and manage the following developer tools on demand (no need to preinstall globally):
 
-- LSP servers: `lua-language-server`, `typescript-language-server`, `yaml-language-server`, `marksman`,
+- LSP servers: `lua-language-server`, `vtsls`, `yaml-language-server`, `marksman`,
   `basedpyright`, `ruff`, `taplo`, `bash-language-server`, `dockerfile-language-server`,
   `vue-language-server`, `rust-analyzer`
 - DAP: `codelldb`, `debugpy`
@@ -64,7 +64,8 @@ Ruff diagnostics are provided by Ruff LSP; nvim-lint is reserved for tools witho
   credentials are not persisted to disk.
 - Git review: `-go` opens the repository diff, while `]h` and `[h` move between hunks in a file.
 - Mermaid: `-cd` previews the diagram under the cursor when `termaid` is installed.
-- Remote SSH: `-mrc` connects to a host from your SSH config; run `:checkhealth remote-sshfs` to verify system tools.
+- Remote SSH: `-mrc` connects to a host from your SSH config. Before the first health check, load the lazy plugin with
+  `:Lazy load remote-sshfs.nvim`, then run `:checkhealth remote-sshfs` to verify system tools.
 - Treesitter: compiling parsers requires a working C toolchain (`gcc`/`clang`) and `make`.
 - Python DAP FastAPI example: a sample DAP configuration launches `uvicorn` via `python -m uvicorn app.main:app --reload`. Ensure `uvicorn` is installed in your project’s environment if you use that command.
 

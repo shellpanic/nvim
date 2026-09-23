@@ -5,6 +5,7 @@ return {
    config = function()
       local devtools = require("devtools")
       local conform = require("conform")
+      local timeout_ms = 2000
       conform.setup({
          formatters_by_ft = {
             javascript = { "prettier" },
@@ -30,7 +31,7 @@ return {
             vue = { "prettier" },
             ["_"] = { "trim_whitespace" },
          },
-         format_on_save = { lsp_format = "fallback", async = false, timeout_ms = 500 },
+         format_on_save = { lsp_format = "fallback", async = false, timeout_ms = timeout_ms },
          log_level = vim.log.levels.ERROR,
          notify_on_error = true,
          formatters = {
@@ -39,7 +40,8 @@ return {
                   if devtools.find_project_config("prettier", ctx.filename) then
                      return {}
                   end
-                  return { "--config", devtools.path("prettier.json") }
+                  local config = devtools.existing_path("prettier.json")
+                  return config and { "--config", config } or {}
                end,
             },
             stylua = {
@@ -47,7 +49,8 @@ return {
                   if devtools.find_project_config("stylua", ctx.filename) then
                      return {}
                   end
-                  return { "--config-path", devtools.path("stylua.toml") }
+                  local config = devtools.existing_path("stylua.toml")
+                  return config and { "--config-path", config } or {}
                end,
             },
          },
@@ -55,9 +58,12 @@ return {
       vim.api.nvim_create_user_command("ConformFormat", function(opts)
          local range = nil
          if opts.range ~= 0 then
-            range = { start = opts.line1, finish = opts.line2 }
+            range = {
+               start = { opts.line1, 0 },
+               ["end"] = { opts.line2, #vim.fn.getline(opts.line2) },
+            }
          end
-         conform.format({ lsp_format = "fallback", async = false, timeout_ms = 500, range = range })
+         conform.format({ lsp_format = "fallback", async = false, timeout_ms = timeout_ms, range = range })
       end, { range = true })
    end,
 }

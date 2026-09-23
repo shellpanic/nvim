@@ -67,6 +67,11 @@ function M.path(name)
    return vim.fs.joinpath(M.root, name)
 end
 
+function M.existing_path(name)
+   local path = M.path(name)
+   return file_exists(path) and path or nil
+end
+
 function M.find_project_config(tool, filename)
    local spec = assert(project_configs[tool], "Unknown devtool: " .. tool)
    local start = filename and filename ~= "" and filename or vim.uv.cwd()

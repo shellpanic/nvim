@@ -1,11 +1,31 @@
+local vue_language_server = vim.fs.joinpath(
+   vim.fn.stdpath("data"),
+   "mason",
+   "packages",
+   "vue-language-server",
+   "node_modules",
+   "@vue",
+   "language-server"
+)
+
 return {
-   ts_ls = {
-      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
-      init_options = {
-         preferences = {
-            includeCompletionsWithSnippetText = false,
-            includeCompletionsWithInsertTextCompletions = false,
+   vtsls = {
+      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
+      settings = {
+         vtsls = {
+            tsserver = {
+               globalPlugins = {
+                  {
+                     name = "@vue/typescript-plugin",
+                     location = vue_language_server,
+                     languages = { "vue" },
+                     configNamespace = "typescript",
+                  },
+               },
+            },
          },
+         javascript = { suggest = { completeFunctionCalls = false } },
+         typescript = { suggest = { completeFunctionCalls = false } },
       },
    },
 }
