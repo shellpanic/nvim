@@ -38,6 +38,7 @@ return {
                "markdownlint",
                "yamllint",
                "selene",
+               "ast-grep",
                -- Formatters & tools
                "prettier",
                "stylua",
@@ -46,6 +47,7 @@ return {
                "isort",
                "black",
                "yamlfmt",
+               "dcm",
             },
          })
       end,

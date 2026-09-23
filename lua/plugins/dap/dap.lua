@@ -10,12 +10,11 @@ return {
          "DapStepInto",
          "DapStepOut",
          "DapPythonTestMethod",
+         "DapUiToggle",
       },
-      -- UI integration is optional; avoid forcing install at startup
       dependencies = {
          {
             "rcarriga/nvim-dap-ui",
-            optional = true,
             dependencies = { "nvim-neotest/nvim-nio" },
          },
       },
@@ -24,6 +23,9 @@ return {
          local has_dapui, dapui = pcall(require, "dapui")
          if has_dapui then
             pcall(dapui.setup)
+            vim.api.nvim_create_user_command("DapUiToggle", function()
+               dapui.toggle()
+            end, {})
             dap.listeners.after.event_initialized["dapui_config"] = function()
                dapui.open()
             end
@@ -73,7 +75,11 @@ return {
                   python_path = install_path .. "/venv/bin/python"
                end
             end
-            python_path = python_path or vim.fn.exepath("python3") or "python3"
+            local system_python = vim.fn.exepath("python3")
+            if system_python == "" then
+               system_python = "python3"
+            end
+            python_path = python_path or system_python
             dap_python.setup(python_path)
             dap_python.test_runner = "pytest"
          end
@@ -91,9 +97,19 @@ return {
                request = "launch",
                name = "FastApi App",
                module = "uvicorn",
-               args = { "app.main:app", "--reload" },
+               args = { "app.main:app" },
             })
          end)
+
+         vim.api.nvim_create_autocmd("VimLeavePre", {
+            group = vim.api.nvim_create_augroup("dap_process_cleanup", { clear = true }),
+            callback = function()
+               pcall(dap.terminate)
+               if has_dapui then
+                  pcall(dapui.close)
+               end
+            end,
+         })
       end,
    },
    -- Load only for Python files to avoid startup cost

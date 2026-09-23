@@ -65,7 +65,7 @@ install_void() {
    sudo xbps-install -Sy
 
    # Core CLI tools
-   local core=(git ripgrep fd xclip)
+   local core=(git ripgrep fd xclip curl unzip)
    # Languages and build toolchains
    local langs=(gcc make nodejs python3 python3-pip go rust luarocks)
    # Optional extras
@@ -88,6 +88,7 @@ install_void() {
    fi
 
    ensure_tree_sitter_cli_void || true
+   ensure_deno || true
    if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
    # Pre-fetch plugins and parsers so first start is smooth
@@ -189,20 +190,19 @@ install_neovim_from_source_ubuntu() {
 }
 
 ensure_neovim_ubuntu() {
-   # If Neovim exists, only accept 0.11.x; otherwise, ask user to uninstall
+   # The config uses the built-in LSP API introduced in Neovim 0.11.
    if is_cmd nvim; then
       local ver
       ver=$(nvim --version | head -n1 | sed -E 's/^NVIM v?//' | awk '{print $1}')
-      case "${ver:-}" in
-      0.11.*)
-         same "Neovim ${ver} (0.11.x) already installed"
+      local minor
+      minor=$(printf '%s' "${ver:-}" | awk -F. '{print $2}')
+      if [ "${minor:-0}" -ge 11 ] 2>/dev/null; then
+         same "Neovim ${ver} (0.11+) already installed"
          return 0
-         ;;
-      *)
-         warn "Detected Neovim ${ver}; please uninstall if you want 0.11.x installed by this script"
+      else
+         warn "Detected Neovim ${ver}; version 0.11 or newer is required"
          return 0
-         ;;
-      esac
+      fi
    fi
 
    # Prefer upstream stable PPA for 0.11.x on 22.04
@@ -445,6 +445,7 @@ install_ubuntu_2204() {
    fi
 
    ensure_tree_sitter_cli_ubuntu || true
+   ensure_deno || true
    ensure_selene_on_arm || true
    ensure_dcm_on_arm || true
    if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
@@ -458,6 +459,25 @@ install_ubuntu_2204() {
 # ------------------------------
 # Shared helpers
 # ------------------------------
+ensure_deno() {
+   if is_cmd deno; then
+      same "deno already available"
+      return 0
+   fi
+   if ! is_cmd curl; then
+      warn "curl not found; cannot install deno"
+      return 1
+   fi
+
+   note "Installing deno"
+   curl -fsSL https://deno.land/install.sh | sh || true
+   local deno_bin="$HOME/.deno/bin/deno"
+   if [ -x "$deno_bin" ]; then
+      sudo ln -sf "$deno_bin" /usr/local/bin/deno || true
+   fi
+   is_cmd deno && ok "deno available" || warn "deno installation did not complete"
+}
+
 ensure_julia_via_juliaup() {
    if is_cmd julia; then
       same "julia already available"

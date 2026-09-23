@@ -1,6 +1,7 @@
-# Neovim Setup — System Requirements
+# Neovim development setup
 
-This configuration uses several Neovim plugins that depend on external tools and runtimes. Install the following on your OS so everything works smoothly.
+This is a Neovim 0.11+ configuration with LSP, completion, formatting, linting,
+debugging, a resource-bounded test UI, Markdown tooling, terminals, and Codex.
 
 ## Core CLI/build tools
 - git: required for plugin installation via lazy.nvim
@@ -8,7 +9,7 @@ This configuration uses several Neovim plugins that depend on external tools and
 - C/C++ toolchain: gcc or clang (required for nvim-treesitter parsers and some plugin builds)
 
 ## Required language runtimes
-- Node.js (LTS or newer): required by `zbirenbaum/copilot.lua` (Copilot) and some language tooling
+- Node.js (LTS or newer): required by language tooling
 - Python 3: used by `nvim-dap-python`/`debugpy` and `neotest-python`; recommended to have `pip` and virtualenv available
 - Rust toolchain (`rustup`, `cargo`): required by `rustaceanvim` / rust-analyzer workflow
 - Flutter SDK + Dart: required by `flutter-tools.nvim`
@@ -21,33 +22,68 @@ This configuration uses several Neovim plugins that depend on external tools and
 - lazydocker (optional but mapped): used by ToggleTerm integration (`:LazyDockerToggle`)
 - Docker (or Podman): required by `nvim-dev-container` to work with Dev Containers
 
-## Managed automatically by Mason
-Mason will install and manage the following developer tools on demand (no need to preinstall globally):
+## Testing and debugging
 
-- LSP servers: `vue-language-server`, `copilot-language-server`
+Neotest supports Python and Rust. It is intentionally configured to avoid the
+process storms that project discovery and watch mode can cause:
+
+- automatic project-wide discovery is disabled;
+- on-demand discovery uses one worker;
+- test commands run sequentially;
+- persistent watch mode is disabled;
+- the summary animation is disabled.
+
+The leader key is `-`. Useful test mappings are:
+
+- `-un`: run the nearest test
+- `-uf`: run the current file
+- `-ur`: rerun the last test
+- `-us`: toggle the test summary UI
+- `-uo` / `-up`: open test output / toggle the output panel
+- `-uS`: select a running test to stop
+- `-ud` / `-uD`: debug the nearest test / current file
+
+DAP UI opens automatically for debugger sessions and can be toggled with
+`-du`. `F3` terminates the session; `F5`, `F10`, `F11`, and `F12` control it.
+
+## AI
+
+[`codex.nvim`](https://github.com/johnseth97/codex.nvim) provides a popup for
+the installed Codex CLI. Toggle it with `-ax`. API credentials remain outside
+this repository.
+
+## Managed automatically by Mason
+
+Mason installs and manages the following developer tools:
+
+- LSP servers: Lua, TypeScript, YAML, Markdown, Python, TOML, Bash, Docker,
+  Vue, and Rust servers
 - DAP: `codelldb`, `debugpy`
-- Linters: `flake8`, `pyproject-flake8`, `eslint_d`, `markdownlint`, `selene`, `ast-grep`
-- Formatters: `prettier`, `stylua`, `beautysh`, `shfmt`, `isort`, `black`, `yamlfmt`, `taplo`, `dcm`
+- Linters/tools: `flake8`, `pyproject-flake8`, `eslint_d`, `markdownlint`,
+  `yamllint`, `selene`, `ast-grep`
+- Formatters: `prettier`, `stylua`, `beautysh`, `shfmt`, `isort`, `black`,
+  `yamlfmt`, `taplo`, `dcm`
 
 Mason installs binaries into Neovim’s data directory; no system-wide installation is required for these.
 
 ## Plugin-specific notes
 - Treesitter: compiling parsers requires a working C toolchain (`gcc`/`clang`) and `make`.
-- Copilot Chat: the plugin’s `make tiktoken` step may require a compiler toolchain present at build time.
 - Peek (Markdown preview): requires `deno` to be installed and available in PATH.
-- Python DAP FastAPI example: a sample DAP configuration launches `uvicorn` via `python -m uvicorn app.main:app --reload`. Ensure `uvicorn` is installed in your project’s environment if you use that command.
+- Python DAP FastAPI example: a sample DAP configuration launches `uvicorn`
+  via `python -m uvicorn app.main:app`. Ensure `uvicorn` is installed in the
+  project environment if you use it.
 
 ## Quick install hints
 
 Ubuntu/Debian
-- One-shot (Ubuntu 22.04): run `./setup.sh` (installs Neovim 0.11.x, modern Node 20.x + npm, rg/fd, etc.)
+- One-shot (Ubuntu 22.04): run `./setup.sh` (installs Neovim 0.11+, modern Node, Deno, rg/fd, etc.)
 - Core tooling (manual): `sudo apt update && sudo apt install -y git build-essential ripgrep fd-find python3 python3-venv docker.io make gcc`
 - Node.js: prefer 18+ (20 LTS recommended). On Ubuntu, install via NodeSource:
   - `sudo apt install -y ca-certificates curl gnupg`
   - `curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -`
   - `sudo apt-get install -y nodejs`
 - Optional TUI tools: `sudo apt install -y lazygit` (lazydocker: install per upstream)
-- Deno (for Peek): `sudo snap install deno --classic` or use the official script: `curl -fsSL https://deno.land/x/install/install.sh | sh`
+- Deno (for Peek) is installed by `setup.sh`; manually, use `curl -fsSL https://deno.land/install.sh | sh`
 - Rust toolchain: `curl https://sh.rustup.rs -sSf | sh`
 - Flutter SDK + Dart: install from official docs (https://docs.flutter.dev/get-started/install) or snap (`sudo snap install flutter --classic`) and run `flutter doctor`.
 - fd note: the binary is `fdfind` on Debian/Ubuntu. If you want `fd` in PATH: `mkdir -p ~/.local/bin && ln -s $(command -v fdfind) ~/.local/bin/fd` and add `~/.local/bin` to PATH.
@@ -56,7 +92,7 @@ Ubuntu/Debian
 Void Linux
 - Core tooling: `sudo xbps-install -S git base-devel ripgrep fd python3 python3-virtualenv nodejs docker gcc make`
 - Optional TUI tools: `sudo xbps-install -S lazygit` (lazydocker: install per upstream)
-- Deno (for Peek): `sudo xbps-install -S deno`
+- Deno (for Peek) is installed by `setup.sh`; manually, use `sudo xbps-install -S deno`
 - Rust toolchain: `curl https://sh.rustup.rs -sSf | sh`
 - Flutter SDK + Dart: install from official docs (https://docs.flutter.dev/get-started/install); ensure `flutter` and `dart` are in PATH.
 - Docker post-install (runit): `sudo ln -s /etc/sv/docker /var/service && sudo usermod -aG docker $USER`
