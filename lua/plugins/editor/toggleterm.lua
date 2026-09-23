@@ -24,47 +24,47 @@ return {
       })
 
       local Terminal = require("toggleterm.terminal").Terminal
+
+      local function name_tab(term, name)
+         vim.api.nvim_buf_call(term.bufnr, function()
+            vim.cmd("silent noautocmd file term://" .. name)
+         end)
+      end
+
       local lazygit = Terminal:new({
          cmd = "lazygit",
          dir = "git_dir",
-         direction = "float",
-         float_opts = { border = "double" },
+         direction = "tab",
+         display_name = "git",
          on_open = function(term)
+            name_tab(term, "git")
             vim.cmd("startinsert!")
-            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", { noremap = true, silent = true })
-         end,
-         on_close = function()
-            vim.cmd("startinsert!")
+            vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = term.bufnr, silent = true, desc = "Close LazyGit" })
          end,
       })
 
       local lazydocker = Terminal:new({
          cmd = "lazydocker",
-         direction = "float",
-         float_opts = { border = "double" },
+         direction = "tab",
+         display_name = "docker",
          on_open = function(term)
+            name_tab(term, "docker")
             vim.cmd("startinsert!")
-            vim.api.nvim_buf_set_keymap(term.bufnr, "n", "q", "<cmd>close<CR>", { noremap = true, silent = true })
-         end,
-         on_close = function()
-            vim.cmd("startinsert!")
+            vim.keymap.set(
+               "n",
+               "q",
+               "<cmd>close<CR>",
+               { buffer = term.bufnr, silent = true, desc = "Close LazyDocker" }
+            )
          end,
       })
 
-      function _lazygit_toggle()
-         lazygit:toggle()
-      end
-
-      function _lazydocker_toggle()
-         lazydocker:toggle()
-      end
-
       -- user commands so mappings can live in domain keymaps
       vim.api.nvim_create_user_command("LazyGitToggle", function()
-         _lazygit_toggle()
+         lazygit:toggle()
       end, { force = true })
       vim.api.nvim_create_user_command("LazyDockerToggle", function()
-         _lazydocker_toggle()
+         lazydocker:toggle()
       end, { force = true })
    end,
 }

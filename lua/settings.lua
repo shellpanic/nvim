@@ -3,6 +3,10 @@ local opt = vim.opt
 
 vim.g.mapleader = "-"
 
+-- Keep mapping-prefix menus open until a key is chosen or Escape is pressed.
+-- Terminal key codes still use the separate ttimeout/ttimeoutlen settings.
+opt.timeout = false
+
 -- Disable unused providers to silence health warnings
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
@@ -21,6 +25,8 @@ opt.shiftwidth = 3
 opt.softtabstop = 3
 opt.smarttab = true
 opt.numberwidth = 4
+opt.autoread = true
+opt.clipboard = "unnamedplus"
 
 -- Visualize all spaces, tabs, etc.
 opt.listchars = {

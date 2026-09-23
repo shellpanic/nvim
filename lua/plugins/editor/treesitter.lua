@@ -1,7 +1,7 @@
 return {
    {
       "nvim-treesitter/nvim-treesitter",
-      event = "VeryLazy",
+      event = { "BufReadPre", "BufNewFile" },
       build = ":TSUpdate",
       opts = {
          ensure_installed = {
@@ -42,14 +42,9 @@ return {
          vim.opt.foldenable = false
          vim.opt.foldmethod = "expr"
          vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-         pcall(function()
-            vim.treesitter.language.register("bash", "zsh")
-         end)
+         vim.treesitter.language.register("bash", "zsh")
+         vim.treesitter.language.register("typescript", "ts")
+         vim.treesitter.language.register("markdown", "markdown.mdx")
       end,
-   },
-   {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      event = "VeryLazy",
-      dependencies = { "nvim-treesitter/nvim-treesitter" },
    },
 }

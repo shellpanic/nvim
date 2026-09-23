@@ -1,22 +1,31 @@
+local vue_language_server = vim.fs.joinpath(
+   vim.fn.stdpath("data"),
+   "mason",
+   "packages",
+   "vue-language-server",
+   "node_modules",
+   "@vue",
+   "language-server"
+)
+
 return {
-   {
-      -- Typescript/JavaScript via builtin LSP config
-      "neovim/nvim-lspconfig",
-      ft = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
-      config = function()
-         local common = require("plugins.lsp.common")
-         vim.lsp.config("ts_ls", {
-            on_attach = common.on_attach,
-            capabilities = common.capabilities,
-            filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
-            init_options = {
-               preferences = {
-                  includeCompletionsWithSnippetText = false,
-                  includeCompletionsWithInsertTextCompletions = false,
+   vtsls = {
+      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
+      settings = {
+         vtsls = {
+            tsserver = {
+               globalPlugins = {
+                  {
+                     name = "@vue/typescript-plugin",
+                     location = vue_language_server,
+                     languages = { "vue" },
+                     configNamespace = "typescript",
+                  },
                },
             },
-         })
-         vim.lsp.enable("ts_ls")
-      end,
+         },
+         javascript = { suggest = { completeFunctionCalls = false } },
+         typescript = { suggest = { completeFunctionCalls = false } },
+      },
    },
 }

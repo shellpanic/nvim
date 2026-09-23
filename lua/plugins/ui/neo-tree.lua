@@ -41,8 +41,8 @@ return {
             name = { trailing_slash = false, use_git_status_colors = true, highlight = "NeoTreeFileName" },
             git_status = {
                symbols = {
-                  added = "",
-                  modified = "",
+                  added = "✚",
+                  modified = "",
                   deleted = "✖",
                   renamed = "󰁕",
                   untracked = "",
@@ -62,6 +62,57 @@ return {
          window = { position = "right", width = 40, mapping_options = { noremap = true, nowait = true }, mappings = {} },
          nesting_rules = {},
          filesystem = {
+            components = {
+               root_git_status = function(_, node)
+                  if node.type ~= "directory" or node:get_depth() ~= 1 then
+                     return {}
+                  end
+
+                  local git = require("neo-tree.git")
+                  local path = require("neo-tree.utils").normalize_path(node.path)
+                  local worktree = git.worktrees[path]
+                  if not worktree or not worktree.status then
+                     return {}
+                  end
+
+                  for _, status in pairs(worktree.status) do
+                     local code = type(status) == "table" and status[1] or status
+                     if code ~= "!" then
+                        return { text = "", highlight = "NeoTreeGitModified" }
+                     end
+                  end
+
+                  return {}
+               end,
+            },
+            renderers = {
+               directory = {
+                  { "indent" },
+                  { "icon" },
+                  { "current_filter" },
+                  {
+                     "container",
+                     content = {
+                        { "name", zindex = 10 },
+                        { "symlink_target", zindex = 10, highlight = "NeoTreeSymbolicLinkTarget" },
+                        { "clipboard", zindex = 10 },
+                        {
+                           "diagnostics",
+                           errors_only = true,
+                           zindex = 20,
+                           align = "right",
+                           hide_when_expanded = true,
+                        },
+                        { "root_git_status", zindex = 10, align = "right" },
+                        { "git_status", zindex = 10, align = "right", hide_when_expanded = false },
+                        { "file_size", zindex = 10, align = "right" },
+                        { "type", zindex = 10, align = "right" },
+                        { "last_modified", zindex = 10, align = "right" },
+                        { "created", zindex = 10, align = "right" },
+                     },
+                  },
+               },
+            },
             filtered_items = {
                visible = false,
                hide_dotfiles = false,

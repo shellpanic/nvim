@@ -58,6 +58,7 @@ return {
             },
             performance = { debounce = 20, throttle = 30, fetching_timeout = 200 },
             sources = {
+               { name = "lazydev", group_index = 0 },
                { name = "path", keyword_length = 2 },
                -- Show LSP items as soon as they are available (incl. trigger chars)
                { name = "nvim_lsp", keyword_length = 0 },
@@ -211,10 +212,7 @@ return {
             experimental = { ghost_text = true },
          })
 
-         cmp.setup.filetype(
-            "gitcommit",
-            { sources = cmp.config.sources({ { name = "git" } }, { { name = "buffer" } }) }
-         )
+         cmp.setup.filetype("gitcommit", { sources = { { name = "buffer" } } })
          -- Markdown: enable render-markdown source only for these filetypes
          cmp.setup.filetype({ "markdown", "markdown.mdx" }, {
             sources = cmp.config.sources({ { name = "render-markdown" } }, {
@@ -222,15 +220,13 @@ return {
                { name = "path", keyword_length = 2 },
             }),
          })
-         -- Cargo.toml: enable Crates completion
-         pcall(function()
-            cmp.setup.filetype("toml", {
-               sources = cmp.config.sources({ { name = "crates" } }, {
-                  { name = "path", keyword_length = 2 },
-                  { name = "buffer", keyword_length = 3 },
-               }),
-            })
-         end)
+         -- Cargo.toml receives crate versions from crates.nvim's in-process LSP.
+         cmp.setup.filetype("toml", {
+            sources = cmp.config.sources({ { name = "nvim_lsp" } }, {
+               { name = "path", keyword_length = 2 },
+               { name = "buffer", keyword_length = 3 },
+            }),
+         })
          -- Cmdline completion: use Ctrl-j/k to navigate; Esc to cancel
          local cmdline_mappings = cmp.mapping.preset.cmdline()
          -- Let <Down>/<Up> behave normally (history), not control cmp
@@ -282,26 +278,6 @@ return {
                { { name = "cmdline", option = { ignore_cmds = { "Man", "!" } } } }
             ),
          })
-
-         -- Integrate with nvim-autopairs: add () on confirm, but skip when LSP provides a snippet (to keep placeholders)
-         pcall(function()
-            local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-            local handler = cmp_autopairs.on_confirm_done()
-            cmp.event:on("confirm_done", function(evt)
-               local ok, entry = pcall(function()
-                  return evt.entry
-               end)
-               if not ok or not entry then
-                  return
-               end
-               local item = entry:get_completion_item()
-               if item and item.insertTextFormat == 2 then
-                  -- LSP already expands a snippet with parameters; don't add extra parens
-                  return
-               end
-               handler(evt)
-            end)
-         end)
       end,
    },
 }

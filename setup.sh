@@ -65,7 +65,7 @@ install_void() {
    sudo xbps-install -Sy
 
    # Core CLI tools
-   local core=(git ripgrep fd xclip)
+   local core=(git ripgrep fd xclip fuse-sshfs)
    # Languages and build toolchains
    local langs=(gcc make nodejs python3 python3-pip go rust luarocks)
    # Optional extras
@@ -425,7 +425,7 @@ install_ubuntu_2204() {
 
    # Core tools (include both X11 and Wayland clipboard helpers)
    # Include xsel as an additional clipboard provider fallback and xauth for X11 forwarding.
-   local core=(git ripgrep fd-find xclip wl-clipboard xsel xauth curl unzip)
+   local core=(git ripgrep fd-find xclip wl-clipboard xsel xauth curl unzip sshfs)
    for p in "${core[@]}"; do ensure_pkg_apt "$p"; done
    ensure_fd_symlink_ubuntu || true
 
