@@ -23,6 +23,7 @@ return {
       "NeotestAttach",
    },
    config = function()
+      local devtools = require("devtools")
       local adapters = {}
       local ok_rust, rust_adapter = pcall(require, "rustaceanvim.neotest")
       if ok_rust and rust_adapter then
@@ -30,7 +31,17 @@ return {
       end
       local ok_py, neotest_python = pcall(require, "neotest-python")
       if ok_py and neotest_python then
-         table.insert(adapters, neotest_python({ dap = { justMyCode = false } }))
+         table.insert(
+            adapters,
+            neotest_python({
+               dap = { justMyCode = false },
+               -- neotest-python's glob fallback can join multiple sibling venvs
+               -- into an invalid path. Prefer the project's exact `.venv`.
+               python = function(root)
+                  return devtools.python_executable(root)
+               end,
+            })
+         )
       end
       require("neotest").setup({
          adapters = adapters,

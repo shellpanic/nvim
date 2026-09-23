@@ -38,7 +38,15 @@ file, `-ur` to rerun the last test, and `-us` for the summary UI. Test output is
 available through `-uo` and `-up`; `-uS` selects a running test to stop.
 Debug the nearest test or file with `-ud` / `-uD`.
 
-DAP UI opens automatically for debugger sessions and toggles with `-du`.
+Python tests, debugging, and Ruff prefer the closest project `.venv`, keeping
+the interpreter and the repository's pinned tools consistent even when sibling
+`.ci-venv` or `.quality-venv` directories exist.
+
+DAP UI opens automatically for debugger sessions. Use `-du` to toggle it,
+`-do` / `-dc` to explicitly open or close it, `-de` to evaluate the word or
+visual selection, and `-dr` for the REPL. `-db`, `-dB`, and `-dl` create a
+regular breakpoint, conditional breakpoint, or log point; `-dx` clears them.
+`-dR` reruns the last debug session.
 `F3` terminates a session; `F5`, `F10`, `F11`, and `F12` control execution.
 
 ## Managed automatically by Mason
