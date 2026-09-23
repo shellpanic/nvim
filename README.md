@@ -40,7 +40,9 @@ Debug the nearest test or file with `-ud` / `-uD`.
 
 Python tests, debugging, and Ruff prefer the closest project `.venv`, keeping
 the interpreter and the repository's pinned tools consistent even when sibling
-`.ci-venv` or `.quality-venv` directories exist.
+`.ci-venv` or `.quality-venv` directories exist. Without a project `.venv`,
+active virtualenv/Conda environments and uv, Poetry, or Pipenv projects remain
+supported.
 
 DAP UI opens automatically for debugger sessions. Use `-du` to toggle it,
 `-do` / `-dc` to explicitly open or close it, `-de` to evaluate the word or

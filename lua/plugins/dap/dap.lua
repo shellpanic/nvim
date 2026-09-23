@@ -98,6 +98,9 @@ return {
          vim.api.nvim_create_user_command("DapReplToggle", function()
             dap.repl.toggle()
          end, {})
+         vim.api.nvim_create_user_command("DapRunLast", function()
+            dap.run_last()
+         end, {})
          vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticError", linehl = "", numhl = "" })
          vim.fn.sign_define(
             "DapStopped",
@@ -135,10 +138,18 @@ return {
                system_python = "python3"
             end
             python_path = python_path or system_python
-            dap_python.setup(python_path)
+            local devtools = require("devtools")
+            dap_python.setup(python_path, {
+               pythonPath = function()
+                  return devtools.python_executable(vim.api.nvim_buf_get_name(0))
+               end,
+            })
             dap_python.test_runner = "pytest"
-            dap_python.resolve_python = function()
-               return require("devtools").python_executable(vim.api.nvim_buf_get_name(0))
+            dap.listeners.on_config["python_project_environment"] = function(config)
+               if config.type == "python" and not config.python and not config.pythonPath then
+                  config.pythonPath = devtools.python_executable(vim.api.nvim_buf_get_name(0))
+               end
+               return config
             end
          end
          setup_debugpy()
@@ -156,6 +167,9 @@ return {
                name = "FastApi App",
                module = "uvicorn",
                args = { "app.main:app" },
+               pythonPath = function()
+                  return require("devtools").python_executable(vim.api.nvim_buf_get_name(0))
+               end,
             })
          end)
 

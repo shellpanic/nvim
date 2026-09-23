@@ -38,7 +38,7 @@ return {
                -- neotest-python's glob fallback can join multiple sibling venvs
                -- into an invalid path. Prefer the project's exact `.venv`.
                python = function(root)
-                  return devtools.python_executable(root)
+                  return devtools.python_command(root)
                end,
             })
          )
