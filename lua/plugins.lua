@@ -1,7 +1,6 @@
 return require("lazy").setup({
    -- UI and Theme
    require("plugins.ui.rigel"),
-   require("plugins.ui.icons"),
    require("plugins.ui.devicons"),
    require("plugins.ui.dressing"),
    require("plugins.ui.indent"),
@@ -10,9 +9,11 @@ return require("lazy").setup({
 
    -- Editor
    require("plugins.editor.which-key"),
-   require("plugins.editor.comment"),
    require("plugins.editor.autopairs"),
+   require("plugins.editor.surround"),
    require("plugins.editor.telescope"),
+   require("plugins.editor.gitsigns"),
+   require("plugins.editor.diffview"),
    require("plugins.editor.aerial"),
    require("plugins.editor.neo-clip"),
    require("plugins.editor.toggleterm"),
@@ -24,16 +25,12 @@ return require("lazy").setup({
 
    -- Markdown
    require("plugins.markdown.render-markdown"),
-   require("plugins.markdown.peek"),
+   require("plugins.markdown.mermaid"),
 
    -- LSP
    require("plugins.lsp.mason"),
+   require("plugins.lsp.lazydev"),
    require("plugins.lsp.lsp"),
-   -- Language-specific LSP modules
-   require("plugins.lsp.lang.typescript"),
-   require("plugins.lsp.lang.python"),
-   require("plugins.lsp.lang.yaml"),
-   require("plugins.lsp.lang.markdown"),
    require("plugins.lsp.flutter-tools"),
    require("plugins.lsp.rustacean"),
    require("plugins.lsp.crates"),
@@ -45,9 +42,10 @@ return require("lazy").setup({
    require("plugins.testing.neotest"),
 
    -- AI
-   require("plugins.ai.codex"),
+   require("plugins.ai.sidekick"),
 
    -- Misc
    require("plugins.misc.devcontainer"),
+   require("plugins.misc.remote-sshfs"),
    require("plugins.misc.smoji"),
 })

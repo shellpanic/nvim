@@ -1,0 +1,41 @@
+name: CI
+
+on:
+   push:
+      branches: [main]
+   pull_request:
+
+permissions:
+   contents: read
+
+jobs:
+   validate:
+      runs-on: ubuntu-latest
+      steps:
+         - uses: actions/checkout@v5
+
+         - name: Check Lua formatting
+           uses: JohnnyMorganz/stylua-action@v5
+           with:
+              token: ${{ secrets.GITHUB_TOKEN }}
+              version: v2.4.1
+              args: --check .
+
+         - name: Check shell and lockfile syntax
+           run: |
+              bash -n setup.sh
+              python3 -m json.tool lazy-lock.json >/dev/null
+
+         - name: Install Neovim
+           uses: rhysd/action-setup-vim@v1
+           with:
+              neovim: true
+              version: stable
+
+         - name: Sync plugins
+           run: nvim --headless -i NONE --cmd "set runtimepath^=$PWD" -u init.lua +"Lazy! sync" +qa!
+
+         - name: Load changed integrations
+           run: >-
+              nvim --headless -i NONE --cmd "set runtimepath^=$PWD" -u init.lua
+              +"Lazy! load conform.nvim nvim-lint crates.nvim nvim-cmp nvim-lspconfig neotest nvim-dap" +qa!

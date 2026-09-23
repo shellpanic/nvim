@@ -5,7 +5,7 @@ local function build_on_attach()
    local lsp_signature_cfg = { floating_windows = true, hint_enable = false, hint_prefix = "󰷻 " }
 
    return function(_, bufnr)
-      vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+      vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
       lsp_signature.on_attach(lsp_signature_cfg, bufnr)
       local bufopts = { noremap = true, silent = true, buffer = bufnr }
       local p = "<Leader>l"
@@ -30,7 +30,7 @@ local function build_on_attach()
       vim.keymap.set("n", p .. "q", vim.diagnostic.setloclist, { desc = "LSP: Diagnostics loclist", unpack(bufopts) })
 
       vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
-      vim.keymap.set("n", p .. "rn", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
+      vim.keymap.set("n", p .. "n", vim.lsp.buf.rename, { desc = "LSP: Rename", unpack(bufopts) })
       vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, { desc = "LSP: Code actions", unpack(bufopts) })
       vim.keymap.set("n", p .. "a", vim.lsp.buf.code_action, { desc = "LSP: Code actions", unpack(bufopts) })
 

@@ -65,7 +65,7 @@ install_void() {
    sudo xbps-install -Sy
 
    # Core CLI tools
-   local core=(git ripgrep fd xclip curl unzip)
+   local core=(git ripgrep fd xclip fuse-sshfs)
    # Languages and build toolchains
    local langs=(gcc make nodejs python3 python3-pip go rust luarocks)
    # Optional extras
@@ -88,7 +88,6 @@ install_void() {
    fi
 
    ensure_tree_sitter_cli_void || true
-   ensure_deno || true
    if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
 
    # Pre-fetch plugins and parsers so first start is smooth
@@ -425,7 +424,7 @@ install_ubuntu_2204() {
 
    # Core tools (include both X11 and Wayland clipboard helpers)
    # Include xsel as an additional clipboard provider fallback and xauth for X11 forwarding.
-   local core=(git ripgrep fd-find xclip wl-clipboard xsel xauth curl unzip)
+   local core=(git ripgrep fd-find xclip wl-clipboard xsel xauth curl unzip sshfs)
    for p in "${core[@]}"; do ensure_pkg_apt "$p"; done
    ensure_fd_symlink_ubuntu || true
 
@@ -445,7 +444,6 @@ install_ubuntu_2204() {
    fi
 
    ensure_tree_sitter_cli_ubuntu || true
-   ensure_deno || true
    ensure_selene_on_arm || true
    ensure_dcm_on_arm || true
    if $INCLUDE_OPTIONAL; then ensure_julia_via_juliaup || true; fi
@@ -459,25 +457,6 @@ install_ubuntu_2204() {
 # ------------------------------
 # Shared helpers
 # ------------------------------
-ensure_deno() {
-   if is_cmd deno; then
-      same "deno already available"
-      return 0
-   fi
-   if ! is_cmd curl; then
-      warn "curl not found; cannot install deno"
-      return 1
-   fi
-
-   note "Installing deno"
-   curl -fsSL https://deno.land/install.sh | sh || true
-   local deno_bin="$HOME/.deno/bin/deno"
-   if [ -x "$deno_bin" ]; then
-      sudo ln -sf "$deno_bin" /usr/local/bin/deno || true
-   fi
-   is_cmd deno && ok "deno available" || warn "deno installation did not complete"
-}
-
 ensure_julia_via_juliaup() {
    if is_cmd julia; then
       same "julia already available"

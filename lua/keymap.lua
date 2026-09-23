@@ -24,13 +24,26 @@ set_keymap("n", "<Leader>r", ":e<CR>", "Reload the current file")
 set_keymap("n", "<Leader>x", ":q<CR>", "Quit the current window")
 
 -- Tab Management
-set_keymap("n", "<C-t>", ":tabnew<CR>", "Open a new tab")
+-- <C-t> is also the key that leaves terminal mode, so in a terminal buffer it
+-- toggles keyboard ownership instead of opening a tab: terminal mode hands the
+-- keyboard to Neovim, normal mode hands it back to the running program. Without
+-- this, pressing it in a terminal that already sat in normal mode opened a blank
+-- tab, which looks exactly like every mapping suddenly stopped working.
+set_keymap("n", "<C-t>", function()
+   if vim.bo.buftype == "terminal" then
+      vim.cmd.startinsert()
+   else
+      vim.cmd.tabnew()
+   end
+end, "Open a new tab (in a terminal: return to the running program)")
 set_keymap("n", "<S-h>", "<C-o>", "Jump to the previous location in the jump list")
 set_keymap("n", "<S-l>", "<C-i>", "Jump to the next location in the jump list")
 set_keymap("n", "<S-j>", ":tabprevious<CR>", "Switch to the previous tab")
 set_keymap("n", "<S-k>", ":tabnext<CR>", "Switch to the next tab")
 set_keymap("n", "<S-C-j>", ":tabm -1<CR>", "Move the current tab to the left")
 set_keymap("n", "<S-C-k>", ":tabm +1<CR>", "Move the current tab to the right")
+set_keymap("n", "<S-A-j>", ":tabm -1<CR>", "Move the current tab to the left")
+set_keymap("n", "<S-A-k>", ":tabm +1<CR>", "Move the current tab to the right")
 
 -- Cursor Navigation
 set_keymap("n", "<A-k>", "`[", "Jump to the beginning of the last change")
@@ -48,6 +61,7 @@ set_keymap("n", "<C-H>", "db", "Delete word before cursor in normal mode")
 set_keymap("n", "<C-a>", "gg<S-v>G", "Select all text")
 set_keymap("v", "<C-c>", '"+y', "Copy selection to system clipboard")
 set_keymap("v", "<C-v>", '"+p', "Paste from system clipboard")
+set_keymap("x", "p", "P", "Paste without replacing the yank register")
 
 -- Save and Save All
 set_keymap("n", "<C-s>", ":w<CR>", "Save the current file")

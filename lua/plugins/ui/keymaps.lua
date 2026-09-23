@@ -13,9 +13,6 @@ vim.keymap.set(
    { silent = true, desc = "Editor: Explorer buffers" }
 )
 
--- Color picker moved under Misc group
-vim.keymap.set("n", "<Leader>mc", ":PickColor<CR>", { silent = true, desc = "Misc: Color picker" })
-
 -- Outline moved under Code group
 vim.keymap.set("n", "<Leader>co", ":AerialToggle<CR>", { silent = true, desc = "Code: Outline toggle" })
 
