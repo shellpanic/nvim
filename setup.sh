@@ -18,6 +18,14 @@ ok() { log "[✓] $*"; }
 warn() { log "[!] $*"; }
 same() { log "[=] $*"; }
 
+neovim_version_supported() {
+   local version="${1#v}"
+   local major minor
+   IFS=. read -r major minor _ <<<"${version:-0.0}"
+   [[ "${major:-}" =~ ^[0-9]+$ && "${minor:-}" =~ ^[0-9]+$ ]] \
+      && ((major > 0 || (major == 0 && minor >= 11)))
+}
+
 INCLUDE_OPTIONAL=false
 print_help() {
    cat <<EOF
@@ -189,20 +197,15 @@ install_neovim_from_source_ubuntu() {
 }
 
 ensure_neovim_ubuntu() {
-   # If Neovim exists, only accept 0.11.x; otherwise, ask user to uninstall
+   # The config uses the built-in LSP API introduced in Neovim 0.11.
    if is_cmd nvim; then
       local ver
       ver=$(nvim --version | head -n1 | sed -E 's/^NVIM v?//' | awk '{print $1}')
-      case "${ver:-}" in
-      0.11.*)
-         same "Neovim ${ver} (0.11.x) already installed"
+      if neovim_version_supported "$ver"; then
+         same "Neovim ${ver} (0.11+) already installed"
          return 0
-         ;;
-      *)
-         warn "Detected Neovim ${ver}; please uninstall if you want 0.11.x installed by this script"
-         return 0
-         ;;
-      esac
+      fi
+      warn "Detected Neovim ${ver}; upgrading because version 0.11 or newer is required"
    fi
 
    # Prefer upstream stable PPA for 0.11.x on 22.04

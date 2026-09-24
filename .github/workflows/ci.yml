@@ -38,4 +38,4 @@ jobs:
          - name: Load changed integrations
            run: >-
               nvim --headless -i NONE --cmd "set runtimepath^=$PWD" -u init.lua
-              +"Lazy! load conform.nvim nvim-lint crates.nvim nvim-cmp nvim-lspconfig" +qa!
+              +"Lazy! load conform.nvim nvim-lint crates.nvim nvim-cmp nvim-lspconfig neotest nvim-dap" +qa!

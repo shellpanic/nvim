@@ -23,6 +23,34 @@ This configuration uses several Neovim plugins that depend on external tools and
 - sshfs: required to mount remote workspaces with `remote-sshfs.nvim`
 - termaid (optional): renders Mermaid diagrams in the `-cd` preview; install with `uv tool install termaid`
 
+## Testing and debugging
+
+Neotest supports Python and Rust. Its defaults are intentionally bounded to
+avoid background process storms:
+
+- automatic project-wide discovery is disabled;
+- on-demand discovery uses one worker;
+- test commands run sequentially;
+- persistent watch mode and summary animation are disabled.
+
+The leader key is `-`. Use `-un` for the nearest test, `-uf` for the current
+file, `-ur` to rerun the last test, and `-us` for the summary UI. Test output is
+available through `-uo` and `-up`; `-uS` selects a running test to stop.
+Debug the nearest test or file with `-ud` / `-uD`.
+
+Python tests, debugging, and Ruff prefer the closest project `.venv`, keeping
+the interpreter and the repository's pinned tools consistent even when sibling
+`.ci-venv` or `.quality-venv` directories exist. Without a project `.venv`,
+active virtualenv/Conda environments and uv, Poetry, or Pipenv projects remain
+supported.
+
+DAP UI opens automatically for debugger sessions. Use `-du` to toggle it,
+`-do` / `-dc` to explicitly open or close it, `-de` to evaluate the word or
+visual selection, and `-dr` for the REPL. `-db`, `-dB`, and `-dl` create a
+regular breakpoint, conditional breakpoint, or log point; `-dx` clears them.
+`-dR` reruns the last debug session.
+`F3` terminates a session; `F5`, `F10`, `F11`, and `F12` control execution.
+
 ## Managed automatically by Mason
 Mason will install and manage the following developer tools on demand (no need to preinstall globally):
 
@@ -67,12 +95,14 @@ Ruff diagnostics are provided by Ruff LSP; nvim-lint is reserved for tools witho
 - Remote SSH: `-mrc` connects to a host from your SSH config. Before the first health check, load the lazy plugin with
   `:Lazy load remote-sshfs.nvim`, then run `:checkhealth remote-sshfs` to verify system tools.
 - Treesitter: compiling parsers requires a working C toolchain (`gcc`/`clang`) and `make`.
-- Python DAP FastAPI example: a sample DAP configuration launches `uvicorn` via `python -m uvicorn app.main:app --reload`. Ensure `uvicorn` is installed in your project’s environment if you use that command.
+- Python DAP FastAPI example: a sample DAP configuration launches `uvicorn`
+  via `python -m uvicorn app.main:app`. Ensure `uvicorn` is installed in the
+  project environment if you use that command.
 
 ## Quick install hints
 
 Ubuntu/Debian
-- One-shot (Ubuntu 22.04): run `./setup.sh` (installs Neovim 0.11.x, modern Node 20.x + npm, rg/fd, etc.)
+- One-shot (Ubuntu 22.04): run `./setup.sh` (installs Neovim 0.11+, modern Node 20.x + npm, rg/fd, etc.)
 - Core tooling (manual): `sudo apt update && sudo apt install -y git build-essential ripgrep fd-find python3 python3-venv docker.io make gcc sshfs`
 - Node.js: prefer 18+ (20 LTS recommended). On Ubuntu, install via NodeSource:
   - `sudo apt install -y ca-certificates curl gnupg`

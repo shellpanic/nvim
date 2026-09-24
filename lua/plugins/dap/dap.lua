@@ -9,29 +9,98 @@ return {
          "DapStepOver",
          "DapStepInto",
          "DapStepOut",
+         "DapPause",
+         "DapRunLast",
+         "DapClearBreakpoints",
          "DapPythonTestMethod",
+         "DapUiToggle",
+         "DapUiOpen",
+         "DapUiClose",
+         "DapUiEval",
+         "DapSetConditionalBreakpoint",
+         "DapSetLogPoint",
+         "DapReplToggle",
       },
       dependencies = {
-         {
-            "rcarriga/nvim-dap-ui",
-            dependencies = { "nvim-neotest/nvim-nio" },
-         },
+         "nvim-neotest/nvim-nio",
+         "rcarriga/nvim-dap-ui",
       },
       config = function()
          local dap = require("dap")
-         local has_dapui, dapui = pcall(require, "dapui")
-         if has_dapui then
-            pcall(dapui.setup)
-            dap.listeners.after.event_initialized["dapui_config"] = function()
-               dapui.open()
+         local dapui = require("dapui")
+         dapui.setup({
+            floating = { border = "rounded" },
+            layouts = {
+               {
+                  elements = {
+                     { id = "scopes", size = 0.4 },
+                     { id = "breakpoints", size = 0.2 },
+                     { id = "stacks", size = 0.2 },
+                     { id = "watches", size = 0.2 },
+                  },
+                  position = "left",
+                  size = 40,
+               },
+               {
+                  elements = {
+                     { id = "repl", size = 0.5 },
+                     { id = "console", size = 0.5 },
+                  },
+                  position = "bottom",
+                  size = 10,
+               },
+            },
+            render = { indent = 1, max_value_lines = 25 },
+         })
+         vim.api.nvim_create_user_command("DapUiToggle", function()
+            dapui.toggle()
+         end, {})
+         vim.api.nvim_create_user_command("DapUiOpen", function()
+            dapui.open()
+         end, {})
+         vim.api.nvim_create_user_command("DapUiClose", function()
+            dapui.close()
+         end, {})
+         vim.api.nvim_create_user_command("DapUiEval", function(opts)
+            local expression = opts.args ~= "" and opts.args or nil
+            if opts.range > 0 then
+               local lines = vim.fn.getregion(vim.fn.getpos("'<"), vim.fn.getpos("'>"), {
+                  type = vim.fn.visualmode(),
+               })
+               expression = table.concat(lines, "\n")
             end
-            dap.listeners.before.event_terminated["dapui_config"] = function()
-               dapui.close()
-            end
-            dap.listeners.before.event_exited["dapui_config"] = function()
-               dapui.close()
-            end
+            dapui.eval(expression, { enter = true })
+         end, { nargs = "?", range = true })
+         dap.listeners.after.event_initialized["dapui_config"] = function()
+            dapui.open()
          end
+         dap.listeners.before.event_terminated["dapui_config"] = function()
+            dapui.close()
+         end
+         dap.listeners.before.event_exited["dapui_config"] = function()
+            dapui.close()
+         end
+
+         vim.api.nvim_create_user_command("DapSetConditionalBreakpoint", function()
+            vim.ui.input({ prompt = "Breakpoint condition: " }, function(condition)
+               if condition and condition ~= "" then
+                  dap.set_breakpoint(condition)
+               end
+            end)
+         end, {})
+         vim.api.nvim_create_user_command("DapSetLogPoint", function()
+            vim.ui.input({ prompt = "Log point message: " }, function(message)
+               if message and message ~= "" then
+                  dap.set_breakpoint(nil, nil, message)
+               end
+            end)
+         end, {})
+         vim.api.nvim_create_user_command("DapReplToggle", function()
+            dap.repl.toggle()
+         end, {})
+         vim.api.nvim_create_user_command("DapRunLast", function()
+            dap.run_last()
+         end, {})
          vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticError", linehl = "", numhl = "" })
          vim.fn.sign_define(
             "DapStopped",
@@ -64,9 +133,24 @@ return {
                   python_path = install_path .. "/venv/bin/python"
                end
             end
-            python_path = python_path or vim.fn.exepath("python3") or "python3"
-            dap_python.setup(python_path)
+            local system_python = vim.fn.exepath("python3")
+            if system_python == "" then
+               system_python = "python3"
+            end
+            python_path = python_path or system_python
+            local devtools = require("devtools")
+            dap_python.setup(python_path, {
+               pythonPath = function()
+                  return devtools.python_executable(vim.api.nvim_buf_get_name(0))
+               end,
+            })
             dap_python.test_runner = "pytest"
+            dap.listeners.on_config["python_project_environment"] = function(config)
+               if config.type == "python" and not config.python and not config.pythonPath then
+                  config.pythonPath = devtools.python_executable(vim.api.nvim_buf_get_name(0))
+               end
+               return config
+            end
          end
          setup_debugpy()
          -- user command wrapper for python test method
@@ -82,9 +166,20 @@ return {
                request = "launch",
                name = "FastApi App",
                module = "uvicorn",
-               args = { "app.main:app", "--reload" },
+               args = { "app.main:app" },
+               pythonPath = function()
+                  return require("devtools").python_executable(vim.api.nvim_buf_get_name(0))
+               end,
             })
          end)
+
+         vim.api.nvim_create_autocmd("VimLeavePre", {
+            group = vim.api.nvim_create_augroup("dap_process_cleanup", { clear = true }),
+            callback = function()
+               pcall(dap.terminate)
+               pcall(dapui.close)
+            end,
+         })
       end,
    },
    -- Load only for Python files to avoid startup cost
